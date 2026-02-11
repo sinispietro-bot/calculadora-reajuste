@@ -20,18 +20,21 @@
   const diagText = document.getElementById('diagText');
 
   const brMoney = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const brNum = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 6, maximumFractionDigits: 6 });
   const brPct = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  // Séries SGS (ajuste se quiser adicionar mais depois)
-  // Observação: várias dessas séries vêm como NÍVEL (índice) no SGS.
+  // ======== TIPAGEM FIXA POR SÉRIE (SEM "ADIVINHAÇÃO") ========
+  // pct   = variação mensal em %  (fator = produto(1 + v/100))
+  // level = índice em nível       (fator = último / primeiro)
   const SERIES = [
-    { id: '189', label: 'IGP-M (FGV) — SGS 189' },
-    { id: '190', label: 'IGP-DI (FGV) — SGS 190' },
-    { id: '433', label: 'IPCA (IBGE) — SGS 433' },
-    { id: '11773', label: 'IPC-FIPE — SGS 11773' },
+    { id: '189', label: 'IGP-M (FGV) — SGS 189', type: 'pct' },
+    { id: '190', label: 'IGP-DI (FGV) — SGS 190', type: 'pct' },
+    { id: '433', label: 'IPCA (IBGE) — SGS 433', type: 'pct' },
+    { id: '11773', label: 'IPC-FIPE — SGS 11773', type: 'level' },
   ];
+  const SERIES_MAP = Object.fromEntries(SERIES.map(s => [s.id, s]));
 
-  // popula select se estiver vazio
+  // popula select (se precisar)
   if (indexEl && indexEl.options.length <= 1) {
     SERIES.forEach(s => {
       const opt = document.createElement('option');
@@ -42,10 +45,10 @@
     indexEl.value = '190';
   }
 
-  // ---------- Máscara de moeda ----------
-  // O usuário digita: 10000 -> vira R$ 10.000,00 ao sair do campo
+  // ---------- Helpers ----------
   function onlyDigits(s){ return (s || '').replace(/\D+/g, ''); }
 
+  // moeda: usuário digita 10000 -> R$ 10.000,00
   function setMoneyFromDigits(el, digits){
     if (!digits) { el.value = ''; el.dataset.raw = ''; return; }
     const cents = parseInt(digits, 10);
@@ -55,7 +58,6 @@
   }
 
   function parseMoney(el){
-    // usa raw se existir; senão tenta extrair
     if (el.dataset.raw) return Number(el.dataset.raw);
     const d = onlyDigits(el.value);
     if (!d) return NaN;
@@ -63,20 +65,15 @@
   }
 
   rentEl.addEventListener('focus', () => {
-    // ao focar, mostra só número sem R$ pra facilitar digitar
     const val = parseMoney(rentEl);
-    if (Number.isFinite(val)) rentEl.value = String(Math.round(val * 100) / 100).replace('.', ',');
+    if (Number.isFinite(val)) rentEl.value = String(val).replace('.', ',');
   });
   rentEl.addEventListener('blur', () => {
     const d = onlyDigits(rentEl.value);
     setMoneyFromDigits(rentEl, d);
   });
-  rentEl.addEventListener('input', () => {
-    // permite digitar livre, mas mantém só números e vírgula visual
-    // (não formata a cada tecla para não travar)
-  });
 
-  // ---------- Máscara de data dd/mm/aaaa ----------
+  // data dd/mm/aaaa
   function formatDateInput(value){
     const d = onlyDigits(value).slice(0, 8);
     const p1 = d.slice(0,2);
@@ -89,9 +86,7 @@
   }
 
   startEl.addEventListener('input', () => {
-    const pos = startEl.selectionStart;
     startEl.value = formatDateInput(startEl.value);
-    startEl.setSelectionRange(pos, pos);
   });
 
   function parseDateBR(s){
@@ -101,7 +96,6 @@
     const mm = parseInt(m[2],10);
     const yyyy = parseInt(m[3],10);
     const dt = new Date(Date.UTC(yyyy, mm-1, dd));
-    // valida
     if (dt.getUTCFullYear() !== yyyy || (dt.getUTCMonth()+1) !== mm || dt.getUTCDate() !== dd) return null;
     return dt;
   }
@@ -156,29 +150,13 @@
   }
 
   function parseValorToNumber(v){
-    // SGS geralmente vem como string "1171.2100" ou "0,34"
-    const s = String(v ?? '').trim().replace(/\./g,'').replace(',', '.'); // remove milhar e troca vírgula por ponto
-    // mas se vier "1171.2100" (ponto decimal), o replace acima removeu ponto. Então:
-    // tratamos um caso: se original tem ponto e não tem vírgula, não remove.
+    // SGS pode vir "0,87" ou "0.87" ou "187.6000"
     const orig = String(v ?? '').trim();
     if (orig.includes('.') && !orig.includes(',')) {
       return Number(orig);
     }
+    const s = orig.replace(/\./g,'').replace(',', '.'); // milhar + decimal
     return Number(s);
-  }
-
-  function guessSeriesType(values){
-    // Heurística:
-    // - se a maioria está entre -50 e +50 => provável "variação %"
-    // - senão => provável "nível/índice"
-    const nums = values.filter(n => Number.isFinite(n));
-    if (nums.length < 2) return 'unknown';
-
-    let pctLike = 0;
-    for (const n of nums){
-      if (Math.abs(n) <= 50) pctLike++;
-    }
-    return (pctLike / nums.length) >= 0.7 ? 'pct' : 'level';
   }
 
   function calcFactorFromPct(monthlyPct){
@@ -207,11 +185,13 @@
 
       const periodicity = periodicityEl.value; // mensal | anual
       const serie = indexEl.value;
+      const meta = SERIES_MAP[serie];
+      if (!meta) throw new Error('Série inválida.');
 
-      // data do reajuste = +1 mês ou +1 ano (mesmo dia)
+      // data do reajuste = +1 mês ou +1 ano
       const reajusteDt = periodicity === 'mensal' ? addMonthsUTC(startDt, 1) : addYearsUTC(startDt, 1);
 
-      // período considerado: mês da data inicial até mês anterior ao reajuste
+      // período: mês inicial -> mês anterior ao reajuste
       const startMonth = firstDayOfMonthUTC(startDt);
       const endMonth = firstDayOfMonthUTC(addMonthsUTC(reajusteDt, -1));
 
@@ -226,27 +206,28 @@
         throw new Error('Série retornou poucos pontos no período. Tente outra data ou índice.');
       }
 
-      // ordena por data (dd/mm/aaaa)
+      // parse + ordena por data
       const parsed = rows.map(r => {
-        const d = parseDateBR(String(r.data || '').replaceAll('-', '/')) || parseDateBR(String(r.data || ''));
+        const d = parseDateBR(String(r.data || '')) || null;
         return { dateStr: r.data, date: d, raw: r.valor, value: parseValorToNumber(r.valor) };
-      }).filter(x => x.date);
+      }).filter(x => x.date && Number.isFinite(x.value));
 
       parsed.sort((a,b)=> a.date - b.date);
 
-      const values = parsed.map(x => x.value);
-      const type = guessSeriesType(values);
+      if (parsed.length < 2){
+        throw new Error('Não foi possível interpretar os valores retornados pelo SGS.');
+      }
 
+      const values = parsed.map(x => x.value);
+
+      // ======== CÁLCULO CORRETO POR TIPO ========
       let factor;
-      let detailsHeader = '';
-      if (type === 'pct'){
+      if (meta.type === 'pct'){
         factor = calcFactorFromPct(values);
-        detailsHeader = `Série usada: ${serie} (variação % mensal)\nRegra: fator = Π(1 + v/100)\n`;
       } else {
         const first = values[0];
         const last = values[values.length-1];
         factor = last / first;
-        detailsHeader = `Série usada: ${serie} (nível/índice)\nRegra: fator = último / primeiro\n`;
       }
 
       const trava = !!lockEl.checked;
@@ -262,30 +243,34 @@
       outReajuste.textContent = `${dd}/${mm}/${yyyy}`;
 
       outVar.textContent = `${brPct.format(variacao)}%`;
-      outFactor.textContent = brPct.format(factor);
+      outFactor.textContent = brNum.format(factor);
       outNewRent.textContent = brMoney.format(novoAluguel);
 
       const startLabel = `${monthNamePt(startMonth.getUTCMonth())} de ${startMonth.getUTCFullYear()}`;
       const endLabel = `${monthNamePt(endMonth.getUTCMonth())} de ${endMonth.getUTCFullYear()}`;
-      outInfo.textContent = `Período considerado: ${startLabel} até ${endLabel} • Pontos: ${parsed.length} • Deflação: ${trava ? 'travada (não reduz)' : 'permitida'}`;
+      outInfo.textContent = `Período: ${startLabel} até ${endLabel} • Pontos: ${parsed.length} • Deflação: ${trava ? 'travada' : 'permitida'} • Série: ${meta.label}`;
 
-      // detalhes (lista)
+      // detalhes
+      const header =
+        `Tipo da série: ${meta.type === 'pct' ? 'Variação mensal (%)' : 'Nível (índice)'}\n` +
+        `Regra: ${meta.type === 'pct' ? 'fator = Π(1 + v/100)' : 'fator = último / primeiro'}\n\n`;
+
       const lines = parsed.map(x => {
-        // imprime como % se pct, senão imprime nível
         const v = x.value;
-        const txt = (type === 'pct')
+        const txt = meta.type === 'pct'
           ? `${String(x.dateStr).padEnd(12,' ')}  ${brPct.format(v)}%`
           : `${String(x.dateStr).padEnd(12,' ')}  ${brPct.format(v)} (nível)`;
         return txt;
       });
 
-      outDetails.textContent = detailsHeader + lines.join('\n');
+      outDetails.textContent = header + lines.join('\n');
 
       diagText.textContent =
-        `Tipo detectado: ${type === 'pct' ? 'VARIAÇÃO %' : 'NÍVEL (índice)'}\n` +
+        `Série: ${meta.label}\n` +
         `Start ISO: ${startISO}\nEnd ISO: ${endISO}\n` +
-        `Fator final: ${factor}\n` +
-        `Trava deflação: ${trava ? 'sim' : 'não'}\n`;
+        `Tipo fixo: ${meta.type}\n` +
+        `Fator: ${factor}\n` +
+        `Variação: ${variacao}\n`;
 
       setMsg('ok','Cálculo concluído com sucesso.');
     } catch(e){
