@@ -387,9 +387,11 @@
   }
 
   function parseBCBPercent(v){
-    // exemplo: "0,87" => 0.87
-    return Number(String(v).replace('.','').replace(',','.'));
-  }
+  const s = String(v).trim().replace(/\./g,'').replace(',', '.'); // tira milhares, mantém decimal
+  const n = Number(s);
+  if (!Number.isFinite(n)) throw new Error(`Valor inválido retornado pela API: "${v}"`);
+  return n; // já está em % ao mês
+}
 
   // ================== UI helpers ==================
   function setMsg(type, text){
