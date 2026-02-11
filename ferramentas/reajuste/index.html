@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calculadora de Reajuste — Ferramentas</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+  <style>
+    /* pequeno ajuste de layout só aqui */
+    .calcWrap{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+    }
+    @media (max-width: 980px){ .calcWrap{grid-template-columns:1fr} }
+
+    .panel{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border-radius:var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .head2{padding:18px 18px 14px; border-bottom:1px solid var(--line)}
+    .head2 h2{margin:0; font-size:18px}
+    .head2 p{margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.4}
+    .body2{padding:16px 18px 18px}
+
+    label{display:block; font-size:13px; color:#cbd5e1; margin:0 0 8px}
+    .field{
+      background: rgba(15,23,42,.7);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      min-height:48px;
+      gap:10px;
+    }
+    input, select{width:100%; background:transparent; border:0; outline:none; color:var(--text); font-size:15px}
+    input::placeholder{color:rgba(230,237,246,.35)}
+    .hint{margin-top:6px; color:var(--muted); font-size:12px; line-height:1.25}
+
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    @media (max-width: 720px){ .grid2{grid-template-columns:1fr} }
+
+    .row2{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:14px; flex-wrap:wrap}
+    .check{
+      display:flex; align-items:center; gap:10px;
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: rgba(15,23,42,.35);
+    }
+    .btn{
+      cursor:pointer; border:0; padding:12px 18px; border-radius:14px;
+      font-weight:800; font-size:15px; color:#07101f;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      min-width:160px;
+    }
+
+    .status{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 14px;
+      background: rgba(15,23,42,.35);
+      color: var(--muted);
+      font-size:13px;
+    }
+    .status.ok{color:#d1fae5; border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.08);}
+    .status.err{color:#ffe4e6; border-color: rgba(255,107,107,.38); background: rgba(255,107,107,.08);}
+
+    .kpi{
+      border:1px solid var(--line);
+      background: rgba(15,23,42,.45);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:10px;
+    }
+    .kpi .k{color:var(--muted); font-size:12px; margin:0 0 6px}
+    .kpi .v{margin:0; font-size:20px; font-weight:900}
+    details{
+      border:1px solid var(--line);
+      background: rgba(15,23,42,.35);
+      border-radius:16px;
+      padding:12px 14px;
+    }
+    summary{cursor:pointer; color:#cbd5e1; font-weight:700; font-size:13px}
+    pre{margin:10px 0 0; white-space:pre-wrap; word-break:break-word; font-size:12px; color:#e2e8f0; line-height:1.35}
+    select option{ background-color:#0b1225; color:#e6edf6; }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="navInner">
+      <div class="brand"><span>Shopping Center</span><span class="badge">Ferramentas</span></div>
+      <nav class="menu">
+        <a id="nav-home" href="/">Home</a>
+        <a id="nav-dicas" href="/dicas/">Dicas</a>
+        <a id="nav-ferramentas" href="/ferramentas/">Ferramentas</a>
+        <a id="nav-planilhas" href="/planilhas/">Planilhas</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Calculadora de Reajuste</h1>
+      <p>Ferramenta oficial: busca dados no SGS/BCB e calcula reajuste conforme periodicidade (mensal/anual), com opção de travar deflação.</p>
+    </section>
+
+    <div class="calcWrap">
+      <section class="panel">
+        <div class="head2">
+          <h2>Dados</h2>
+          <p>Informe aluguel, data inicial, índice e periodicidade. O período vai do mês inicial ao mês anterior ao reajuste.</p>
+        </div>
+        <div class="body2">
+          <div class="grid2">
+            <div>
+              <label for="rent">Valor do aluguel (R$)</label>
+              <div class="field">
+                <input id="rent" type="text" inputmode="numeric" placeholder="Ex.: 10000 ou 10.000,00" autocomplete="off" />
+              </div>
+              <div class="hint">Digite <b>10000</b> e ao sair vira <b>R$ 10.000,00</b>.</div>
+            </div>
+
+            <div>
+              <label for="idx">Índice</label>
+              <div class="field">
+                <select id="idx">
+                  <option value="189">IGP-M (FGV) — SGS 189</option>
+                  <option value="190">IGP-DI (FGV) — SGS 190</option>
+                  <option value="433">IPCA (IBGE) — SGS 433</option>
+                  <option value="193">IPC-FIPE — SGS 193</option>
+                </select>
+              </div>
+              <div class="hint">Índices oficiais via SGS/BCB.</div>
+            </div>
+
+            <div>
+              <label for="start">Data de início do contrato</label>
+              <div class="field">
+                <input id="start" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" autocomplete="off"/>
+              </div>
+              <div class="hint">Máscara: <b>dd/mm/aaaa</b>. O cálculo é por mês/ano.</div>
+            </div>
+
+            <div>
+              <label for="freq">Periodicidade do reajuste</label>
+              <div class="field">
+                <select id="freq">
+                  <option value="monthly">Mensal</option>
+                  <option value="annual" selected>Anual</option>
+                </select>
+              </div>
+              <div class="hint">Mensal = +1 mês | Anual = +1 ano.</div>
+            </div>
+          </div>
+
+          <div class="row2">
+            <label class="check" for="lock">
+              <input id="lock" type="checkbox" />
+              Travar deflação (não reduzir)
+            </label>
+
+            <button id="btn" class="btn">Calcular</button>
+          </div>
+
+          <div id="status" class="status">Preencha os campos e clique em <b>Calcular</b>.</div>
+
+          <details style="margin-top:12px;">
+            <summary>Diagnóstico (URL consultada e fator)</summary>
+            <pre id="diag">—</pre>
+          </details>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="head2">
+          <h2>Resultado</h2>
+          <p>Variação acumulada, fator e novo aluguel.</p>
+        </div>
+        <div class="body2">
+          <div class="kpi">
+            <p class="k">Data do reajuste</p>
+            <p class="v" id="outDate">—</p>
+          </div>
+          <div class="kpi">
+            <p class="k">Variação acumulada no período</p>
+            <p class="v" id="outVar">—</p>
+          </div>
+          <div class="kpi">
+            <p class="k">Fator aplicado</p>
+            <p class="v" id="outFactor">—</p>
+          </div>
+          <div class="kpi">
+            <p class="k">Novo aluguel</p>
+            <p class="v" id="outRent">—</p>
+          </div>
+
+          <details>
+            <summary>Ver meses e variações utilizadas</summary>
+            <pre id="outList">—</pre>
+          </details>
+
+          <div class="hint" style="margin-top:10px;">Fonte: API SGS/BCB.</div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="footer">
+      Voltar para <a href="/ferramentas/" style="text-decoration:underline;">Ferramentas</a>.
+    </footer>
+  </main>
+
+  <script src="/assets/site.js"></script>
+  <script src="/assets/reajuste.js"></script>
+</body>
+</html>
