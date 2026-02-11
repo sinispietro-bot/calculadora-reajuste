@@ -1,381 +1,486 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Calculadora de Reajuste</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculadora de Reajuste de Aluguel</title>
+
   <style>
     :root{
-      --bg:#0b1220;
-      --panel:#0f1a2f;
-      --card:#0f172a;
-      --line:rgba(255,255,255,.10);
-      --text:#e8eefc;
-      --muted:rgba(232,238,252,.70);
-      --muted2:rgba(232,238,252,.55);
-      --input:#0b1326;
-      --btn:#4f46e5;
-      --btn2:#1f2a44;
-      --ok:#16a34a;
-      --warn:#f59e0b;
-      --shadow: 0 18px 60px rgba(0,0,0,.35);
-      --radius:16px;
+      --bg: #0b1220;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.08);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --line: rgba(255,255,255,.12);
+      --primary: #4f8cff;
+      --primary2: #2dd4bf;
+      --danger: #ff5c77;
+      --ok: #33d17a;
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 18px;
     }
-    *{box-sizing:border-box}
+    *{ box-sizing: border-box; }
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
       background:
-        radial-gradient(1100px 500px at 20% 10%, rgba(79,70,229,.35), transparent 55%),
-        radial-gradient(900px 500px at 85% 0%, rgba(16,185,129,.25), transparent 60%),
-        radial-gradient(900px 600px at 50% 100%, rgba(245,158,11,.18), transparent 55%),
+        radial-gradient(1100px 600px at 18% 10%, rgba(79,140,255,.22), transparent 55%),
+        radial-gradient(900px 520px at 78% 0%, rgba(45,212,191,.18), transparent 60%),
+        radial-gradient(900px 520px at 80% 90%, rgba(255,92,119,.10), transparent 60%),
         var(--bg);
-      color:var(--text);
-      min-height:100vh;
+      color: var(--text);
+      min-height: 100vh;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:28px 16px;
+      padding: 28px 14px;
     }
     .wrap{
       width: min(980px, 100%);
       display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap:18px;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 18px;
+    }
+    @media (max-width: 860px){
+      .wrap{ grid-template-columns: 1fr; }
     }
     .card{
-      background: rgba(15,23,42,.82);
-      border:1px solid var(--line);
+      background: linear-gradient(180deg, var(--card), rgba(255,255,255,.04));
+      border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow:hidden;
     }
     .header{
-      padding:22px 22px 14px;
-      border-bottom:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent);
+      padding: 22px 22px 10px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), transparent);
     }
     .title{
+      display:flex;
+      gap:12px;
+      align-items:center;
       margin:0;
-      font-size:22px;
-      letter-spacing:.2px;
+      font-size: 20px;
+      letter-spacing: .2px;
+    }
+    .badge{
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,.04);
     }
     .subtitle{
-      margin:8px 0 0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.4;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
     }
-
-    .content{ padding:18px 22px 22px; }
-
+    .content{
+      padding: 18px 22px 22px;
+    }
     .grid{
       display:grid;
       grid-template-columns: 1fr 1fr;
-      gap:14px;
+      gap: 14px;
+    }
+    @media (max-width: 560px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 6px;
     }
     .field{
-      display:flex;
-      flex-direction:column;
-      gap:7px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 12px;
+      color: var(--text);
+      outline: none;
+      width: 100%;
+      transition: border-color .15s ease, transform .05s ease;
     }
-    .field label{
-      font-size:13px;
-      color:var(--muted);
+    .field:focus{
+      border-color: rgba(79,140,255,.65);
+      box-shadow: 0 0 0 4px rgba(79,140,255,.12);
     }
-    .input, select{
-      width:100%;
-      padding:12px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: var(--input);
-      color:var(--text);
-      outline:none;
-      font-size:14px;
-    }
-    .input:focus, select:focus{
-      border-color: rgba(79,70,229,.55);
-      box-shadow: 0 0 0 4px rgba(79,70,229,.15);
-    }
-    .hint{
-      color:var(--muted2);
-      font-size:12px;
-      line-height:1.35;
-    }
-
+    select.field{ padding-right: 34px; }
     .row{
       display:flex;
-      gap:12px;
+      gap: 12px;
       align-items:center;
-      justify-content:space-between;
-      margin-top:10px;
-      padding-top:10px;
-      border-top:1px dashed rgba(255,255,255,.10);
+      flex-wrap: wrap;
+      margin-top: 14px;
     }
-    .toggle{
+    .switch{
       display:flex;
       align-items:center;
-      gap:10px;
-      color:var(--muted);
-      font-size:13px;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
       user-select:none;
     }
-    .toggle input{ transform: translateY(1px); }
-
-    .actions{
-      display:flex;
-      gap:12px;
-      margin-top:14px;
-    }
+    .switch input{ transform: scale(1.1); }
     .btn{
-      flex:1;
-      border:1px solid transparent;
-      border-radius:12px;
-      padding:12px 14px;
-      font-weight:700;
+      margin-left:auto;
+      background: linear-gradient(90deg, var(--primary), var(--primary2));
+      border: 0;
+      color: #071019;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-radius: 14px;
       cursor:pointer;
-      font-size:14px;
+      transition: transform .06s ease, filter .15s ease;
+      min-width: 140px;
     }
-    .btn-primary{
-      background: linear-gradient(180deg, rgba(79,70,229,1), rgba(79,70,229,.86));
-      color:#fff;
-    }
-    .btn-primary:hover{ filter:brightness(1.02); }
-    .btn-ghost{
-      background: var(--btn2);
-      border-color: rgba(255,255,255,.12);
-      color: var(--text);
-    }
-    .btn-ghost:hover{ filter:brightness(1.05); }
+    .btn:hover{ filter: brightness(1.05); }
+    .btn:active{ transform: translateY(1px); }
+    .btn[disabled]{ opacity: .6; cursor:not-allowed; }
 
     .side{
-      display:flex;
-      flex-direction:column;
-      gap:18px;
+      padding: 18px 22px 22px;
     }
     .panel{
-      background: rgba(15,23,42,.70);
-      border:1px solid var(--line);
+      background: linear-gradient(180deg, var(--card2), rgba(255,255,255,.03));
+      border: 1px solid var(--line);
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding:18px 18px;
+      padding: 16px;
     }
-    .panel h3{
-      margin:0 0 10px;
-      font-size:14px;
-      color:var(--muted);
-      font-weight:700;
-      letter-spacing:.2px;
-      text-transform: uppercase;
+    .kpi{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
     }
-    .result{
-      font-size:24px;
-      font-weight:900;
-      margin:4px 0 8px;
-      letter-spacing:.2px;
+    .k{
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      padding: 12px 12px;
     }
-    .meta{
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.5;
-      margin:0;
+    .k .h{ font-size: 12px; color: var(--muted); margin:0 0 6px; }
+    .k .v{ font-size: 18px; margin:0; letter-spacing:.2px; }
+    .note{
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
     }
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:999px;
-      padding:8px 10px;
-      color:var(--muted);
-      font-size:12px;
-      margin-top:10px;
-      background: rgba(255,255,255,.03);
+    .alert{
+      margin-top: 12px;
+      border-radius: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
     }
-    .dot{
-      width:8px;height:8px;border-radius:50%;
-      background: var(--warn);
-      box-shadow: 0 0 0 4px rgba(245,158,11,.12);
+    .alert.ok{ border-color: rgba(51,209,122,.35); background: rgba(51,209,122,.08); color: rgba(255,255,255,.86); }
+    .alert.err{ border-color: rgba(255,92,119,.35); background: rgba(255,92,119,.08); color: rgba(255,255,255,.90); }
+    .small{
+      font-size: 11px; color: rgba(255,255,255,.55);
+      margin-top: 10px;
     }
-    .error{
-      display:none;
-      margin-top:10px;
-      color: rgba(255,255,255,.92);
-      background: rgba(245,158,11,.12);
-      border:1px solid rgba(245,158,11,.25);
-      padding:10px 12px;
-      border-radius:12px;
-      font-size:13px;
-    }
-
-    @media (max-width: 880px){
-      .wrap{ grid-template-columns: 1fr; }
-    }
+    a{ color: rgba(79,140,255,.95); text-decoration: none; }
+    a:hover{ text-decoration: underline; }
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="card">
       <div class="header">
-        <h1 class="title">Calculadora de Reajuste</h1>
+        <h1 class="title">
+          Calculadora de Reajuste de Aluguel
+          <span class="badge">Brasil • índices oficiais</span>
+        </h1>
         <p class="subtitle">
-          Informe o valor do aluguel e os níveis do índice do período inicial e do período do reajuste.
-          O sistema calcula o valor atualizado e, se desejado, pode travar variação negativa.
+          Informe o valor do aluguel e o período. O sistema busca as variações mensais no Banco Central (SGS) e calcula o reajuste acumulado.
         </p>
       </div>
 
       <div class="content">
         <div class="grid">
-          <div class="field" style="grid-column:1 / -1;">
-            <label>Valor do aluguel (R$)</label>
-            <input class="input" id="rent" inputmode="decimal" placeholder="Ex: 10.000,00" />
-            <div class="hint">Dica: aceita <b>10.000,00</b> ou <b>10000</b>.</div>
+          <div>
+            <label for="rent">Valor do aluguel</label>
+            <input id="rent" class="field" type="text" inputmode="numeric" placeholder="R$ 0,00" />
           </div>
 
-          <div class="field">
-            <label>Índice</label>
-            <select id="indexName">
-              <option value="IGP-M">IGP-M</option>
-              <option value="IGP-DI">IGP-DI</option>
-              <option value="IPC-FIPE">IPC-FIPE</option>
-              <option value="IPCA">IPCA</option>
+          <div>
+            <label for="index">Índice</label>
+            <select id="index" class="field">
+              <option value="189">IGP-M (FGV)</option>
+              <option value="190">IGP-DI (FGV)</option>
+              <option value="433">IPCA (IBGE)</option>
+              <option value="11773">IPC-FIPE</option>
             </select>
-            <div class="hint">Selecione o índice previsto no contrato.</div>
           </div>
 
-          <div class="field">
-            <label>Periodicidade</label>
-            <select id="period">
-              <option value="Anual">Anual</option>
-              <option value="Mensal">Mensal</option>
-            </select>
-            <div class="hint">Apenas para referência/relatório.</div>
+          <div>
+            <label for="start">Data inicial (mês/ano base)</label>
+            <input id="start" class="field" type="date" />
           </div>
 
-          <div class="field">
-            <label>Índice (mês-base inicial)</label>
-            <input class="input" id="baseIndex" inputmode="decimal" placeholder="Ex: 1171,210" />
-            <div class="hint">Valor do índice no mês-base inicial do contrato.</div>
-          </div>
-
-          <div class="field">
-            <label>Índice (mês-base do reajuste)</label>
-            <input class="input" id="finalIndex" inputmode="decimal" placeholder="Ex: 1165,984" />
-            <div class="hint">Valor do índice no mês-base utilizado no reajuste.</div>
+          <div>
+            <label for="end">Data final (mês/ano do reajuste)</label>
+            <input id="end" class="field" type="date" />
           </div>
         </div>
 
         <div class="row">
-          <div class="toggle">
+          <label class="switch" title="Se marcado, não permite fator acumulado menor que 1 (não aplica redução).">
             <input id="lockDeflation" type="checkbox" />
-            <span>Travar deflação (não reduzir valor)</span>
-          </div>
+            <span>Travar deflação</span>
+          </label>
+
+          <button id="btn" class="btn">Calcular</button>
         </div>
 
-        <div class="actions">
-          <button class="btn btn-ghost" type="button" onclick="fillExample()">Preencher exemplo</button>
-          <button class="btn btn-primary" type="button" onclick="calculate()">Calcular reajuste</button>
+        <div id="msg" class="alert" style="display:none;"></div>
+        <div class="small">
+          Observação: a API do BCB limita consultas longas; por segurança, este site limita o período a 10 anos.
         </div>
-
-        <div id="error" class="error">Preencha corretamente o aluguel e os dois valores do índice. O valor inicial deve ser maior que zero.</div>
       </div>
     </div>
 
-    <div class="side">
-      <div class="panel">
-        <h3>Resultado</h3>
-        <div class="result" id="result">—</div>
-        <p class="meta" id="meta">
-          Informe os dados ao lado e clique em <b>Calcular reajuste</b>.
-        </p>
-        <div class="badge" id="badge" style="display:none;">
-          <span class="dot"></span>
-          <span id="badgeText">Trava de deflação ativa</span>
-        </div>
+    <div class="card">
+      <div class="header">
+        <h2 class="title" style="font-size:18px;margin:0;">Resultado</h2>
+        <p class="subtitle">Variação acumulada e valor reajustado.</p>
       </div>
 
-      <div class="panel">
-        <h3>Notas</h3>
-        <p class="meta" style="margin:0;">
-          • O cálculo considera os níveis informados do índice.<br>
-          • A trava de deflação, quando ativada, impede redução do valor calculado.<br>
-          • Os dados de índice devem ser obtidos em fonte oficial.
-        </p>
+      <div class="side">
+        <div class="panel">
+          <div class="kpi">
+            <div class="k">
+              <p class="h">Variação acumulada no período</p>
+              <p class="v" id="acc">—</p>
+            </div>
+            <div class="k">
+              <p class="h">Fator aplicado</p>
+              <p class="v" id="factor">—</p>
+            </div>
+            <div class="k">
+              <p class="h">Novo aluguel</p>
+              <p class="v" id="newRent">—</p>
+            </div>
+          </div>
+
+          <div class="note" id="detail">
+            Preencha os campos ao lado e clique em <b>Calcular</b>.
+          </div>
+
+          <div class="note">
+            Fonte dos dados: API SGS/BCB.
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <script>
-    function parseBRNumber(v){
-      if(!v) return NaN;
-      v = String(v).trim().replace(/\s/g,'');
-      // remove pontos de milhar (10.000,00)
-      v = v.replace(/\.(?=\d{3}(\D|$))/g, '');
-      // troca vírgula por ponto
-      v = v.replace(',', '.');
-      // mantém apenas números, ponto e sinal
-      v = v.replace(/[^0-9.-]/g,'');
-      return parseFloat(v);
+<script>
+  // ========= Helpers de formatação =========
+  const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const pct = new Intl.NumberFormat('pt-BR', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const num = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 6, maximumFractionDigits: 6 });
+
+  function showMsg(type, text){
+    const el = document.getElementById('msg');
+    el.className = 'alert ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : '');
+    el.textContent = text;
+    el.style.display = 'block';
+  }
+  function hideMsg(){
+    const el = document.getElementById('msg');
+    el.style.display = 'none';
+    el.textContent = '';
+    el.className = 'alert';
+  }
+
+  // Máscara simples de moeda (sem libs)
+  function parseBRL(v){
+    if(!v) return 0;
+    // remove tudo exceto dígitos
+    const digits = String(v).replace(/\D/g,'');
+    if(!digits) return 0;
+    return Number(digits) / 100;
+  }
+  function formatBRLInput(input){
+    const value = parseBRL(input.value);
+    input.value = value ? brl.format(value) : '';
+  }
+
+  const rentInput = document.getElementById('rent');
+  rentInput.addEventListener('input', () => {
+    // mantém digitável: só normaliza ao perder foco
+    rentInput.value = rentInput.value.replace(/[^\d]/g,'');
+    if(rentInput.value.length > 12) rentInput.value = rentInput.value.slice(0,12);
+  });
+  rentInput.addEventListener('blur', () => formatBRLInput(rentInput));
+  rentInput.addEventListener('focus', () => {
+    // ao focar, deixa só dígitos pra editar
+    rentInput.value = rentInput.value.replace(/\D/g,'');
+  });
+
+  // Defaults de datas
+  function todayISO(){
+    const d = new Date();
+    const z = (n) => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
+  }
+  const start = document.getElementById('start');
+  const end = document.getElementById('end');
+
+  // coloca padrão: início = 1 ano atrás, fim = hoje
+  (function setDefaultDates(){
+    const d = new Date();
+    const endD = new Date(d.getFullYear(), d.getMonth(), 1); // 1º dia do mês atual
+    const startD = new Date(endD.getFullYear()-1, endD.getMonth(), 1); // 1 ano antes
+
+    const iso = (dt) => {
+      const z = (n) => String(n).padStart(2,'0');
+      return `${dt.getFullYear()}-${z(dt.getMonth()+1)}-${z(dt.getDate())}`;
+    };
+
+    start.value = iso(startD);
+    end.value = iso(endD);
+    start.max = todayISO();
+    end.max = todayISO();
+  })();
+
+  // ========= Lógica de cálculo =========
+  // API BCB SGS:
+  // https://api.bcb.gov.br/dados/serie/bcdata.sgs.{codigo}/dados?formato=json&dataInicial=DD/MM/YYYY&dataFinal=DD/MM/YYYY
+  function toBCBDate(dt){
+    const z = (n) => String(n).padStart(2,'0');
+    return `${z(dt.getDate())}/${z(dt.getMonth()+1)}/${dt.getFullYear()}`;
+  }
+
+  function monthStart(dt){
+    return new Date(dt.getFullYear(), dt.getMonth(), 1);
+  }
+
+  function monthsDiff(a,b){
+    // diferença em meses entre datas (início de mês)
+    return (b.getFullYear()-a.getFullYear())*12 + (b.getMonth()-a.getMonth());
+  }
+
+  async function fetchSeries(code, dStart, dEnd){
+    const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados?formato=json&dataInicial=${encodeURIComponent(toBCBDate(dStart))}&dataFinal=${encodeURIComponent(toBCBDate(dEnd))}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if(!res.ok) throw new Error(`Falha ao buscar dados (HTTP ${res.status}).`);
+    const data = await res.json();
+    if(!Array.isArray(data) || data.length === 0) throw new Error('Sem dados retornados para o período informado.');
+    return data;
+  }
+
+  function parseBCBValue(v){
+    // vem como string pt-BR tipo "0,25"
+    return Number(String(v).replace('.','').replace(',','.'));
+  }
+
+  function humanMonth(dt){
+    return dt.toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
+  }
+
+  async function calculate(){
+    hideMsg();
+
+    const rent = parseBRL(rentInput.value);
+    const code = document.getElementById('index').value;
+    const lock = document.getElementById('lockDeflation').checked;
+
+    if(!rent || rent <= 0){
+      showMsg('err', 'Informe um valor de aluguel válido.');
+      return;
+    }
+    if(!start.value || !end.value){
+      showMsg('err', 'Informe as datas inicial e final.');
+      return;
     }
 
-    function moneyBR(n){
-      return n.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2});
+    const d0 = monthStart(new Date(start.value));
+    const d1 = monthStart(new Date(end.value));
+
+    if(d1 < d0){
+      showMsg('err', 'A data final não pode ser menor que a data inicial.');
+      return;
     }
 
-    function calculate(){
-      const rent = parseBRNumber(document.getElementById("rent").value);
-      const baseIndex = parseBRNumber(document.getElementById("baseIndex").value);
-      const finalIndex = parseBRNumber(document.getElementById("finalIndex").value);
-      const lock = document.getElementById("lockDeflation").checked;
+    const md = monthsDiff(d0, d1);
+    if(md > 120){
+      // Por padrão, a API do BCB tem restrições; manter dentro de 10 anos.
+      showMsg('err', 'Período muito longo. Por segurança, limite a no máximo 10 anos.');
+      return;
+    }
 
-      const error = document.getElementById("error");
-      const result = document.getElementById("result");
-      const meta = document.getElementById("meta");
-      const badge = document.getElementById("badge");
-      const badgeText = document.getElementById("badgeText");
+    // Para acumular corretamente: buscamos do mês inicial até o mês final.
+    // Como são variações MENSAIS (%), o fator acumulado é:
+    // fator = Π(1 + var_mensal/100)
+    // Observação: se você quer "mês anterior ao reajuste", selecione a data final como esse mês.
+    const dStart = new Date(d0.getFullYear(), d0.getMonth(), 1);
+    // usar último dia do mês final
+    const dEnd = new Date(d1.getFullYear(), d1.getMonth()+1, 0);
 
-      if(!isFinite(rent) || !isFinite(baseIndex) || !isFinite(finalIndex) || baseIndex <= 0){
-        error.style.display = "block";
-        result.textContent = "—";
-        meta.innerHTML = 'Informe os dados ao lado e clique em <b>Calcular reajuste</b>.';
-        badge.style.display = "none";
-        return;
+    const btn = document.getElementById('btn');
+    btn.disabled = true;
+    btn.textContent = 'Calculando...';
+
+    try{
+      const series = await fetchSeries(code, dStart, dEnd);
+
+      // multiplica fator
+      let factor = 1;
+      let count = 0;
+
+      for(const item of series){
+        const v = parseBCBValue(item.valor);
+        // v é variação percentual do mês (ex: 0.25)
+        factor *= (1 + (v/100));
+        count++;
       }
 
-      let factor = finalIndex / baseIndex;
-      if(lock && factor < 1) factor = 1;
+      let applied = factor;
+      if(lock && applied < 1) applied = 1;
 
-      const adjusted = rent * factor;
+      const newRent = rent * applied;
+      const accVariation = applied - 1;
 
-      const idx = document.getElementById("indexName").value;
-      const period = document.getElementById("period").value;
+      document.getElementById('acc').textContent = pct.format(accVariation);
+      document.getElementById('factor').textContent = num.format(applied);
+      document.getElementById('newRent').textContent = brl.format(newRent);
 
-      result.textContent = `R$ ${moneyBR(adjusted)}`;
+      const idxName = document.getElementById('index').selectedOptions[0].textContent;
+      document.getElementById('detail').innerHTML =
+        `<b>${idxName}</b><br>` +
+        `Período: <b>${humanMonth(d0)}</b> até <b>${humanMonth(d1)}</b><br>` +
+        `Meses considerados: <b>${count}</b><br>` +
+        (lock ? `Deflação: <b>travada</b> (fator mínimo = 1)` : `Deflação: <b>permitida</b>`);
 
-      meta.innerHTML =
-        `Índice: <b>${idx}</b> · Periodicidade: <b>${period}</b><br>` +
-        `Base inicial: <b>${baseIndex.toLocaleString("pt-BR")}</b> · Base do reajuste: <b>${finalIndex.toLocaleString("pt-BR")}</b>`;
-
-      if(lock){
-        badgeText.textContent = "Trava de deflação ativa";
-        badge.style.display = "inline-flex";
-      }else{
-        badge.style.display = "none";
-      }
-
-      error.style.display = "none";
+      showMsg('ok', 'Cálculo concluído com sucesso.');
+    }catch(e){
+      console.error(e);
+      showMsg('err', e.message || 'Erro ao calcular. Tente novamente.');
+    }finally{
+      btn.disabled = false;
+      btn.textContent = 'Calcular';
     }
+  }
 
-    function fillExample(){
-      // Exemplo usando os valores que você já tinha citado (IGP-DI)
-      document.getElementById("rent").value = "10000";
-      document.getElementById("indexName").value = "IGP-DI";
-      document.getElementById("period").value = "Anual";
-      document.getElementById("baseIndex").value = "1171,210";
-      document.getElementById("finalIndex").value = "1165,984";
-      document.getElementById("lockDeflation").checked = false;
-      calculate();
-    }
-  </script>
+  document.getElementById('btn').addEventListener('click', calculate);
+
+  // Enter para calcular
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') calculate();
+  });
+</script>
 </body>
 </html>
