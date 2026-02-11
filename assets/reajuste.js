@@ -1,292 +1,454 @@
+// /assets/reajuste.js
 (() => {
-  // ====== CONFIG: séries SGS ======
-  // IMPORTANTE: IPC-FIPE correto (variação mensal %) = 193
-  // (o código 11773 costuma retornar NÍVEL, não % mensal)
-  const SERIES = [
-    { key: "IGPM",  label: "IGP-M (FGV) — SGS 189",  sgs: 189, type: "pct" },
-    { key: "IGPDI", label: "IGP-DI (FGV) — SGS 190", sgs: 190, type: "pct" },
-    { key: "IPCA",  label: "IPCA (IBGE) — SGS 433",  sgs: 433, type: "pct" },
-    { key: "IPCFIPE", label: "IPC-FIPE — SGS 193",    sgs: 193, type: "pct" },
-  ];
+  // =========================
+  // CONFIG / SÉRIES
+  // =========================
 
-  // ====== Helpers DOM ======
-  const $ = (id) => document.getElementById(id);
+  // Séries (SGS/BCB)
+  // IGP-M (FGV): 189  | IGP-DI (FGV): 190 | IPCA: 433 | IPC-FIPE (nível): 11773
+  // IPC-FIPE (variação mensal) nem sempre está claro no SGS. Aqui tentamos um "fallback" inteligente.
+  const SERIES = {
+    "IGP-M (FGV) — SGS 189": { id: 189, type: "level" },
+    "IGP-DI (FGV) — SGS 190": { id: 190, type: "level" },
+    "IPCA (IBGE) — SGS 433": { id: 433, type: "level" },
 
-  // Se seus IDs forem diferentes, ajuste aqui:
-  const el = {
-    aluguel: $("aluguel"),
-    indice: $("indice"),
-    inicio: $("inicio"),
-    periodicidade: $("periodicidade"),
-    travaDeflacao: $("travaDeflacao"),
-    btn: $("btnCalcular"),
-
-    outData: $("outData"),
-    outVar: $("outVariacao"),
-    outFator: $("outFator"),
-    outNovo: $("outNovo"),
-
-    detalhes: $("outDetalhes"),
-    msg: $("msg"),
-    diag: $("diag"),
+    // IPC-FIPE: o SGS 11773 costuma vir como "nível" (pontos).
+    // Muitos sites concorrentes usam a "variação mensal (%)" e acumulam as taxas.
+    // Aqui: tentamos buscar uma série de variação (se existir) e, se não der, cai para nível.
+    "IPC-FIPE — SGS 11773": {
+      id: 11773,
+      type: "auto_ipc_fipe", // tenta variação (%), senão usa nível
+      // chute comum de série de variação (se não existir, vamos detectar e cair pro nível)
+      maybeVariationId: 11774,
+    },
   };
 
-  // ====== Formatação ======
-  const fmtBRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-  const fmtPct = new Intl.NumberFormat("pt-BR", { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const fmtNum = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 6, maximumFractionDigits: 6 });
+  // =========================
+  // HELPERS: DOM
+  // =========================
+  const $ = (sel) => document.querySelector(sel);
 
-  function setMsg(text, type = "info") {
-    if (!el.msg) return;
-    el.msg.textContent = text || "";
-    el.msg.className = `msg ${type}`;
+  // IDs esperados no HTML (se o seu HTML tiver IDs diferentes, me manda um print do trecho do HTML)
+  const el = {
+    aluguel: $("#aluguel"),
+    inicio: $("#inicio"),
+    indice: $("#indice"),
+    periodicidade: $("#periodicidade"),
+    travarDeflacao: $("#travarDeflacao"),
+    btnCalcular: $("#btnCalcular"),
+
+    // Saídas
+    outDataReajuste: $("#outDataReajuste"),
+    outVariacao: $("#outVariacao"),
+    outFator: $("#outFator"),
+    outNovoAluguel: $("#outNovoAluguel"),
+    outDetalhes: $("#outDetalhes"),
+    outMsg: $("#msg"),
+    outDiagnostico: $("#diagnostico"),
+    diagUrl: $("#diagUrl"),
+    diagInfo: $("#diagInfo"),
+    diagLista: $("#diagLista"),
+    detalhesWrap: $("#detalhesWrap"),
+  };
+
+  // Se não achar elementos, não quebra a página inteira
+  const required = ["aluguel", "inicio", "indice", "periodicidade", "btnCalcular"];
+  const missing = required.filter((k) => !el[k]);
+  if (missing.length) {
+    console.warn("reajuste.js: faltando IDs no HTML:", missing);
+    return;
   }
 
-  // ====== Máscara moeda (digita 10000 -> R$ 10.000,00) ======
+  // =========================
+  // FORMATAÇÃO (MOEDA / DATA)
+  // =========================
+  const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+
+  function onlyDigits(s) {
+    return String(s || "").replace(/\D+/g, "");
+  }
+
   function parseBRL(input) {
-    if (!input) return NaN;
-    // permite "10000", "10.000,00", "R$ 10.000,00"
-    const cleaned = String(input)
-      .replace(/[^\d,.-]/g, "")
+    // aceita "10000", "10.000,00", "R$ 10.000,00"
+    const s = String(input || "").trim();
+    if (!s) return NaN;
+
+    // se veio só número (ex: 10000)
+    if (/^\d+([.,]\d+)?$/.test(s) && !s.includes("R$")) {
+      // 10000 => 10000
+      return Number(s.replace(",", "."));
+    }
+
+    // padrão BR
+    const cleaned = s
+      .replace(/[R$\s]/g, "")
       .replace(/\./g, "")
       .replace(",", ".");
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : NaN;
   }
 
-  function formatBRLFromNumber(n) {
+  function formatBRL(n) {
     if (!Number.isFinite(n)) return "";
-    return fmtBRL.format(n);
+    return brl.format(n);
   }
 
-  function installMoneyMask(input) {
-    if (!input) return;
-    input.addEventListener("blur", () => {
-      const n = parseBRL(input.value);
-      if (Number.isFinite(n)) input.value = formatBRLFromNumber(n);
+  function maskCurrencyInput(inputEl) {
+    inputEl.addEventListener("focus", () => {
+      // no foco: deixa "cru" se estiver formatado, mas sem atrapalhar
+      // (não vamos mexer demais aqui)
+    });
+
+    inputEl.addEventListener("blur", () => {
+      const n = parseBRL(inputEl.value);
+      if (Number.isFinite(n)) inputEl.value = formatBRL(n);
+    });
+
+    inputEl.addEventListener("input", () => {
+      // permite digitar normalmente; se usuário digitar só números, tudo bem
+      // não força máscara durante digitação pra não ficar travando o cursor
     });
   }
 
-  // ====== Máscara data dd/mm/aaaa ======
+  function maskDateInput(inputEl) {
+    inputEl.setAttribute("placeholder", "dd/mm/aaaa");
+    inputEl.addEventListener("input", () => {
+      let v = onlyDigits(inputEl.value).slice(0, 8);
+      if (v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1,4}).*/, "$1/$2/$3");
+      else if (v.length >= 3) v = v.replace(/^(\d{2})(\d{1,2}).*/, "$1/$2");
+      inputEl.value = v;
+    });
+  }
+
   function parseBRDate(ddmmyyyy) {
-    if (!ddmmyyyy) return null;
-    const m = String(ddmmyyyy).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-    if (!m) return null;
-    const d = Number(m[1]), mo = Number(m[2]), y = Number(m[3]);
-    const dt = new Date(y, mo - 1, d);
-    if (dt.getFullYear() !== y || dt.getMonth() !== (mo - 1) || dt.getDate() !== d) return null;
-    return dt;
-  }
-
-  function formatBRDate(dt) {
-    const d = String(dt.getDate()).padStart(2, "0");
-    const m = String(dt.getMonth() + 1).padStart(2, "0");
-    const y = dt.getFullYear();
-    return `${d}/${m}/${y}`;
-  }
-
-  function installDateMask(input) {
-    if (!input) return;
-    input.addEventListener("input", () => {
-      let v = input.value.replace(/[^\d]/g, "").slice(0, 8);
-      if (v.length >= 5) input.value = `${v.slice(0,2)}/${v.slice(2,4)}/${v.slice(4)}`;
-      else if (v.length >= 3) input.value = `${v.slice(0,2)}/${v.slice(2)}`;
-      else input.value = v;
-    });
-  }
-
-  // ====== Datas do período ======
-  // Regra: "do mês inicial até o mês anterior ao reajuste".
-  // - Mensal: reajuste = +1 mês do início; período = mês do início (inclusive) até mês anterior ao reajuste.
-  // - Anual: reajuste = +1 ano do início; período idem.
-  function addMonths(dt, n) {
-    const d = new Date(dt);
-    d.setMonth(d.getMonth() + n);
+    const s = String(ddmmyyyy || "").trim();
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return null;
+    const [dd, mm, yyyy] = s.split("/").map((x) => Number(x));
+    const d = new Date(yyyy, mm - 1, dd);
+    if (d.getFullYear() !== yyyy || d.getMonth() !== mm - 1 || d.getDate() !== dd) return null;
     return d;
   }
-  function addYears(dt, n) {
-    const d = new Date(dt);
+
+  function formatBRDate(d) {
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  function addMonths(date, n) {
+    const d = new Date(date);
+    const day = d.getDate();
+    d.setMonth(d.getMonth() + n);
+
+    // corrige overflow (ex: 31 -> mês com 30)
+    if (d.getDate() !== day) {
+      d.setDate(0); // último dia do mês anterior
+    }
+    return d;
+  }
+
+  function addYears(date, n) {
+    const d = new Date(date);
     d.setFullYear(d.getFullYear() + n);
     return d;
   }
 
-  function toBCBDate(dt) {
-    // BCB usa dd/mm/aaaa
-    return formatBRDate(dt);
-  }
-
-  // Para buscar mês completo, pedimos do primeiro dia do mês inicial
-  // até o último dia do mês anterior ao reajuste
-  function monthStart(dt) {
-    return new Date(dt.getFullYear(), dt.getMonth(), 1);
-  }
-  function monthEnd(dt) {
-    return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
-  }
-
-  // ====== Fetch com cache ======
-  async function fetchSerie(serie, dataInicial, dataFinal) {
-    const cacheKey = `sgs:${serie}:${dataInicial}:${dataFinal}`;
-    try {
-      const cached = localStorage.getItem(cacheKey);
-      if (cached) return JSON.parse(cached);
-    } catch {}
-
-    const url = `/api/sgs?serie=${encodeURIComponent(serie)}&dataInicial=${encodeURIComponent(dataInicial)}&dataFinal=${encodeURIComponent(dataFinal)}`;
-    const r = await fetch(url);
-    if (!r.ok) throw new Error(`Erro ao consultar BCB (HTTP ${r.status})`);
-    const data = await r.json();
-
-    try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch {}
-    return data;
-  }
-
-  // ====== Cálculo: acumula variações mensais (%) ======
-  // fator = Π(1 + v/100)
-  function calcFromPctSeries(rows, travaDeflacao) {
-    const items = [];
-    let fator = 1;
-
-    for (const row of rows) {
-      // row: { data: "01/12/2024", valor: "0.34" }
-      const v = Number(String(row.valor).replace(",", "."));
-      if (!Number.isFinite(v)) continue;
-
-      const mult = 1 + (v / 100);
-      fator *= mult;
-
-      items.push({
-        data: row.data,
-        vPct: v,
-      });
-    }
-
-    if (travaDeflacao && fator < 1) fator = 1;
-
-    const variacao = fator - 1;
-    return { fator, variacao, items };
-  }
-
-  // ====== UI: preencher select do índice ======
-  function ensureIndiceOptions() {
-    if (!el.indice) return;
-
-    // se já tem opções, não duplica
-    if (el.indice.options && el.indice.options.length >= 2) return;
-
+  // =========================
+  // UI: preencher select de índices
+  // =========================
+  function populateIndices() {
     el.indice.innerHTML = "";
-    for (const s of SERIES) {
+    Object.keys(SERIES).forEach((label) => {
       const opt = document.createElement("option");
-      opt.value = s.key;
-      opt.textContent = s.label;
+      opt.value = label;
+      opt.textContent = label;
       el.indice.appendChild(opt);
-    }
+    });
   }
 
-  // ====== Render resultado ======
-  function renderResult({ dataReajuste, fator, variacao, items }, serieLabel) {
-    if (el.outData) el.outData.textContent = dataReajuste;
-    if (el.outVar)  el.outVar.textContent = fmtPct.format(variacao);
-    if (el.outFator) el.outFator.textContent = fmtNum.format(fator);
+  // =========================
+  // CHAMADA À API (OPÇÃO 2)
+  // =========================
+  async function fetchSGS(serieId, dataInicial, dataFinal) {
+    const url = `/api/sgs?serie=${encodeURIComponent(serieId)}&dataInicial=${encodeURIComponent(
+      dataInicial
+    )}&dataFinal=${encodeURIComponent(dataFinal)}`;
 
-    const aluguelBase = parseBRL(el.aluguel?.value);
-    const novo = Number.isFinite(aluguelBase) ? (aluguelBase * fator) : NaN;
-    if (el.outNovo) el.outNovo.textContent = Number.isFinite(novo) ? fmtBRL.format(novo) : "—";
-
-    if (el.detalhes) {
-      const linhas = items.map(i => `${i.data}: ${i.vPct.toFixed(2).replace(".", ",")}%`).join("\n");
-      el.detalhes.textContent =
-        `${serieLabel}\n` +
-        `Meses considerados: ${items.length}\n\n` +
-        linhas;
+    const resp = await fetch(url, { method: "GET" });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err?.error || `Falha na API (${resp.status})`);
     }
+    return await resp.json();
   }
 
-  // ====== Clique calcular ======
-  async function onCalcular() {
+  // =========================
+  // CÁLCULO
+  // =========================
+  function detectSeriesNature(values) {
+    // heurística:
+    // - variação mensal (%) geralmente fica entre -50 e +50 (normal é -5 a +5)
+    // - nível (índice) normalmente é bem maior (ex: 1000, 180, 6000 etc)
+    // - mas IPCA nível (433) pode ser algo como 7000 (nível), IPC-FIPE nível ~ 180
+    // então: se a maioria está em módulo < 50 => "percent"
+    const finite = values.filter((v) => Number.isFinite(v));
+    if (!finite.length) return "unknown";
+    const small = finite.filter((v) => Math.abs(v) < 50).length;
+    return small / finite.length >= 0.8 ? "percent" : "level";
+  }
+
+  function factorFromMonthlyPercents(monthlyPercents) {
+    // acumulado por multiplicação: Π(1 + p/100)
+    return monthlyPercents.reduce((acc, p) => acc * (1 + p / 100), 1);
+  }
+
+  function factorFromLevels(levels) {
+    // fator = último / primeiro
+    if (levels.length < 2) return NaN;
+    const first = levels[0];
+    const last = levels[levels.length - 1];
+    if (!Number.isFinite(first) || !Number.isFinite(last) || first === 0) return NaN;
+    return last / first;
+  }
+
+  function setTextSafe(node, text) {
+    if (!node) return;
+    node.textContent = text;
+  }
+
+  function showMsg(type, text) {
+    if (!el.outMsg) return;
+    el.outMsg.classList.remove("ok", "err");
+    if (type === "ok") el.outMsg.classList.add("ok");
+    if (type === "err") el.outMsg.classList.add("err");
+    el.outMsg.textContent = text;
+  }
+
+  function clearOutputs() {
+    setTextSafe(el.outDataReajuste, "—");
+    setTextSafe(el.outVariacao, "—");
+    setTextSafe(el.outFator, "—");
+    setTextSafe(el.outNovoAluguel, "—");
+    if (el.diagUrl) el.diagUrl.textContent = "—";
+    if (el.diagInfo) el.diagInfo.textContent = "";
+    if (el.diagLista) el.diagLista.innerHTML = "";
+    if (el.outDetalhes) el.outDetalhes.innerHTML = "";
+    showMsg("", "");
+  }
+
+  function percentBR(x) {
+    if (!Number.isFinite(x)) return "—";
+    return `${x.toFixed(2).replace(".", ",")}%`;
+  }
+
+  function numberBR(x, decimals = 6) {
+    if (!Number.isFinite(x)) return "—";
+    return x.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: decimals });
+  }
+
+  function monthNamePT(m) {
+    const names = [
+      "janeiro",
+      "fevereiro",
+      "março",
+      "abril",
+      "maio",
+      "junho",
+      "julho",
+      "agosto",
+      "setembro",
+      "outubro",
+      "novembro",
+      "dezembro",
+    ];
+    return names[m] || "";
+  }
+
+  function periodLabel(startDate, endDate) {
+    // start/end são datas do tipo 01/mm/aaaa
+    const s = parseBRDate(startDate);
+    const e = parseBRDate(endDate);
+    if (!s || !e) return "";
+    return `${monthNamePT(s.getMonth())} de ${s.getFullYear()} até ${monthNamePT(e.getMonth())} de ${e.getFullYear()}`;
+  }
+
+  async function calcular() {
+    clearOutputs();
+
+    // 1) Inputs
+    const aluguelBase = parseBRL(el.aluguel.value);
+    if (!Number.isFinite(aluguelBase) || aluguelBase <= 0) {
+      showMsg("err", "Informe um valor de aluguel válido.");
+      return;
+    }
+
+    const dtInicio = parseBRDate(el.inicio.value);
+    if (!dtInicio) {
+      showMsg("err", "Informe a data de início no formato dd/mm/aaaa.");
+      return;
+    }
+
+    const periodicidade = String(el.periodicidade.value || "anual").toLowerCase(); // "mensal" | "anual"
+    const idxLabel = el.indice.value;
+    const idxCfg = SERIES[idxLabel];
+    if (!idxCfg) {
+      showMsg("err", "Selecione um índice.");
+      return;
+    }
+
+    const travar = !!el.travarDeflacao?.checked;
+
+    // 2) Data do reajuste
+    const dtReajuste = periodicidade === "mensal" ? addMonths(dtInicio, 1) : addYears(dtInicio, 1);
+
+    // 3) Período considerado:
+    // regra: do mês inicial até o mês ANTERIOR ao reajuste
+    // então usamos datas 01/mm/aaaa
+    const inicioMes = new Date(dtInicio.getFullYear(), dtInicio.getMonth(), 1);
+    const fimMes = new Date(dtReajuste.getFullYear(), dtReajuste.getMonth(), 1);
+    const fimConsiderado = addMonths(fimMes, -1);
+
+    const dataInicial = `01/${String(inicioMes.getMonth() + 1).padStart(2, "0")}/${inicioMes.getFullYear()}`;
+    const dataFinal = `01/${String(fimConsiderado.getMonth() + 1).padStart(2, "0")}/${fimConsiderado.getFullYear()}`;
+
+    setTextSafe(el.outDataReajuste, formatBRDate(dtReajuste));
+
+    // 4) Buscar dados (API interna)
+    const btn = el.btnCalcular;
+    const old = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Calculando...";
+
     try {
-      setMsg("", "info");
+      let serieId = idxCfg.id;
 
-      const aluguel = parseBRL(el.aluguel?.value);
-      if (!Number.isFinite(aluguel) || aluguel <= 0) {
-        setMsg("Informe um valor de aluguel válido.", "error");
+      // IPC-FIPE: tenta variação mensal primeiro
+      let payload;
+      let effectiveType = idxCfg.type;
+
+      if (idxCfg.type === "auto_ipc_fipe" && idxCfg.maybeVariationId) {
+        // tenta puxar a suposta série de variação
+        try {
+          const pVar = await fetchSGS(idxCfg.maybeVariationId, dataInicial, dataFinal);
+          const vals = (pVar?.dados || []).map((x) => x.valor);
+          const nature = detectSeriesNature(vals);
+
+          if (pVar?.dados?.length >= 2 && nature === "percent") {
+            payload = pVar;
+            serieId = idxCfg.maybeVariationId;
+            effectiveType = "percent";
+          } else {
+            // cai pro nível
+            payload = await fetchSGS(idxCfg.id, dataInicial, dataFinal);
+            effectiveType = "level";
+          }
+        } catch (_) {
+          payload = await fetchSGS(idxCfg.id, dataInicial, dataFinal);
+          effectiveType = "level";
+        }
+      } else {
+        payload = await fetchSGS(serieId, dataInicial, dataFinal);
+        if (idxCfg.type === "level" || idxCfg.type === "percent") {
+          effectiveType = idxCfg.type;
+        } else {
+          const vals = (payload?.dados || []).map((x) => x.valor);
+          effectiveType = detectSeriesNature(vals);
+        }
+      }
+
+      if (el.diagUrl) el.diagUrl.textContent = payload?.url || "—";
+
+      const dados = payload?.dados || [];
+      if (dados.length < 2) {
+        showMsg("err", "Não encontrei dados suficientes no período. Tente outra data/índice.");
         return;
       }
 
-      const dtInicio = parseBRDate(el.inicio?.value);
-      if (!dtInicio) {
-        setMsg("Informe uma data válida (dd/mm/aaaa).", "error");
+      // 5) Calcular fator
+      const valores = dados.map((d) => d.valor);
+
+      let fator;
+      if (effectiveType === "percent") {
+        fator = factorFromMonthlyPercents(valores);
+      } else {
+        fator = factorFromLevels(valores);
+      }
+
+      if (!Number.isFinite(fator)) {
+        showMsg("err", "Não foi possível calcular o fator (dados inválidos).");
         return;
       }
 
-      const periodicidade = (el.periodicidade?.value || "Anual").toLowerCase();
-      const dtReajuste = periodicidade.includes("mens") ? addMonths(dtInicio, 1) : addYears(dtInicio, 1);
+      // travar deflação
+      if (travar && fator < 1) fator = 1;
 
-      const dtIniBusca = monthStart(dtInicio);
-      const dtFimBusca = monthEnd(addMonths(dtReajuste, -1)); // mês anterior ao reajuste
+      const variacao = (fator - 1) * 100;
+      const novoAluguel = aluguelBase * fator;
 
-      const dataInicial = toBCBDate(dtIniBusca);
-      const dataFinal = toBCBDate(dtFimBusca);
+      // 6) Render
+      setTextSafe(el.outVariacao, percentBR(variacao));
+      setTextSafe(el.outFator, numberBR(fator, 6));
+      setTextSafe(el.outNovoAluguel, formatBRL(novoAluguel));
 
-      const key = el.indice?.value || "IGPM";
-      const serie = SERIES.find(s => s.key === key) || SERIES[0];
+      // Detalhes
+      if (el.outDetalhes) {
+        const periodoTxt = periodLabel(dataInicial, dataFinal);
+        const meses = dados.length;
 
-      if (el.btn) {
-        el.btn.disabled = true;
-        el.btn.textContent = "Calculando...";
+        el.outDetalhes.innerHTML = `
+          <div style="margin-top:10px; font-size:13px; color: rgba(255,255,255,.75);">
+            <b>${idxLabel}</b><br/>
+            Período considerado: <b>${periodoTxt}</b><br/>
+            Meses considerados: <b>${meses}</b><br/>
+            Deflação: <b>${travar ? "travada (não reduz)" : "permitida"}</b><br/>
+            Série usada: <b>SGS ${serieId}</b> (${effectiveType === "percent" ? "variação mensal (%)" : "nível (índice)"})
+          </div>
+        `;
       }
 
-      const rows = await fetchSerie(serie.sgs, dataInicial, dataFinal);
-
-      // rows é array com data/valor
-      const trava = !!el.travaDeflacao?.checked;
-      const { fator, variacao, items } = calcFromPctSeries(rows, trava);
-
-      // Data do reajuste é a data do contrato + período
-      const dataReajuste = formatBRDate(dtReajuste);
-
-      renderResult(
-        { dataReajuste, fator, variacao, items },
-        serie.label
-      );
-
-      // Diagnóstico opcional
-      if (el.diag) {
-        el.diag.textContent =
-          `URL consultada: /api/sgs?serie=${serie.sgs}&dataInicial=${dataInicial}&dataFinal=${dataFinal}\n` +
-          `Período: ${dataInicial} até ${dataFinal}\n` +
-          `Itens: ${items.length}\n` +
-          `Fator: ${fator}`;
+      // Lista meses/valores
+      if (el.diagLista) {
+        el.diagLista.innerHTML = "";
+        dados.forEach((d) => {
+          const li = document.createElement("div");
+          const v = d.valor;
+          const txt =
+            effectiveType === "percent"
+              ? `${d.data}: ${percentBR(v)}`
+              : `${d.data}: ${numberBR(v, 4)} (nível)`;
+          li.textContent = txt;
+          el.diagLista.appendChild(li);
+        });
       }
 
-      setMsg("Cálculo concluído com sucesso.", "ok");
-    } catch (e) {
-      setMsg(`Erro: ${e?.message || e}`, "error");
+      showMsg("ok", "Cálculo concluído com sucesso.");
+    } catch (err) {
+      showMsg("err", `Erro: ${String(err?.message || err)}`);
     } finally {
-      if (el.btn) {
-        el.btn.disabled = false;
-        el.btn.textContent = "Calcular";
-      }
+      btn.disabled = false;
+      btn.textContent = old;
     }
   }
 
-  // ====== Init ======
-  function init() {
-    ensureIndiceOptions();
-    installMoneyMask(el.aluguel);
-    installDateMask(el.inicio);
+  // =========================
+  // INIT
+  // =========================
+  populateIndices();
 
-    if (el.btn) el.btn.addEventListener("click", onCalcular);
+  // máscaras
+  maskCurrencyInput(el.aluguel);
+  maskDateInput(el.inicio);
 
-    // Ajuste: ao focar, deixar digitar “limpo” se quiser
-    if (el.aluguel) {
-      el.aluguel.addEventListener("focus", () => {
-        // transforma "R$ 10.000,00" -> "10000"
-        const n = parseBRL(el.aluguel.value);
-        if (Number.isFinite(n)) el.aluguel.value = String(Math.round(n * 100) / 100).replace(".", ",");
-      });
-    }
+  // valor inicial “bonito” se vier puro
+  if (el.aluguel.value && !el.aluguel.value.includes("R$")) {
+    const n = parseBRL(el.aluguel.value);
+    if (Number.isFinite(n)) el.aluguel.value = formatBRL(n);
   }
 
-  document.addEventListener("DOMContentLoaded", init);
+  // clique calcular
+  el.btnCalcular.addEventListener("click", (e) => {
+    e.preventDefault();
+    calcular();
+  });
 })();
