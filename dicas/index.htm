@@ -2,14 +2,17 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dicas — Shopping Center</title>
   <link rel="stylesheet" href="/assets/styles.css" />
 </head>
 <body>
   <header class="nav">
     <div class="navInner">
-      <div class="brand"><span>Shopping Center</span><span class="badge">Dicas</span></div>
+      <div class="brand">
+        <span>Shopping Center</span>
+        <span class="badge">Dicas</span>
+      </div>
       <nav class="menu">
         <a id="nav-home" href="/">Home</a>
         <a id="nav-dicas" href="/dicas/">Dicas</a>
@@ -20,46 +23,38 @@
   </header>
 
   <main class="container">
-    <section class="hero">
-      <h1>Dicas e conteúdos</h1>
-      <p>Lista inicial de tópicos. Depois você pode transformar cada item em um artigo completo.</p>
+    <section class="heroCard">
+      <h1>Dicas e conteúdo</h1>
+      <p>Conteúdos educativos sobre rotinas e conceitos de shopping center. (Vamos evoluindo e adicionando artigos.)</p>
     </section>
 
-    <h2 class="sectionTitle">Tópicos</h2>
-    <div class="list">
-      <div class="item">
-        <div>
-          <b>Aluguel (fixo, percentual e híbridos)</b>
-          <span>Como normalmente se estrutura e o que observar.</span>
+    <section class="grid2">
+      <div class="panel">
+        <div class="panelHead">
+          <h2>Tópicos sugeridos</h2>
+          <p>Ideias para os primeiros artigos.</p>
         </div>
-        <span class="pill2">Em breve</span>
-      </div>
-      <div class="item">
-        <div>
-          <b>Condomínio</b>
-          <span>O que é rateio, previsão orçamentária e boas práticas.</span>
+        <div class="panelBody">
+          <div class="msg">
+            • O que é aluguel em shopping (aluguel mínimo, percentual, garantias)<br/>
+            • Condomínio: o que cobre, como rateia, inadimplência<br/>
+            • Fundo de Promoção (FPP): finalidade, regras e transparência<br/>
+            • Reajuste: índices, periodicidade e “mês anterior ao reajuste”
+          </div>
+          <div class="footerNote">Se quiser, eu já te entrego o 1º artigo pronto (texto + estrutura).</div>
         </div>
-        <span class="pill2">Em breve</span>
       </div>
-      <div class="item">
-        <div>
-          <b>Fundo de Promoção (FPP)</b>
-          <span>Para que serve, governança e transparência.</span>
-        </div>
-        <span class="pill2">Em breve</span>
-      </div>
-      <div class="item">
-        <div>
-          <b>Garantias contratuais</b>
-          <span>Fiança, seguro-fiança, caução e pontos de atenção.</span>
-        </div>
-        <span class="pill2">Em breve</span>
-      </div>
-    </div>
 
-    <footer class="footer">
-      Sugestão: depois criamos páginas do tipo /dicas/aluguel/ etc.
-    </footer>
+      <div class="panel">
+        <div class="panelHead">
+          <h2>Atalho</h2>
+          <p>Ferramenta prática de cálculo.</p>
+        </div>
+        <div class="panelBody">
+          <a class="link" href="/ferramentas/reajuste/">Abrir Calculadora de Reajuste →</a>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="/assets/site.js"></script>
