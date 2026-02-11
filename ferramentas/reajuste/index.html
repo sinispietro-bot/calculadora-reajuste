@@ -3,12 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Calculadora de Reajuste - Shopping Center</title>
-
-  <!-- IMPORTANTE: como este arquivo está em /ferramentas/reajuste/, precisa voltar 2 níveis -->
+  <title>Calculadora de Reajuste — Ferramentas</title>
   <link rel="stylesheet" href="../../assets/styles.css" />
 </head>
-
 <body>
   <header class="nav">
     <div class="navInner">
@@ -16,129 +13,126 @@
         <span>Shopping Center</span>
         <span class="badge">Ferramentas</span>
       </div>
-
       <nav class="menu">
-        <a href="/">Home</a>
-        <a href="/dicas/">Dicas</a>
-        <a href="/ferramentas/" class="active">Ferramentas</a>
-        <a href="/planilhas/">Planilhas</a>
+        <a id="nav-home" href="/">Home</a>
+        <a id="nav-dicas" href="/dicas/">Dicas</a>
+        <a id="nav-ferramentas" href="/ferramentas/">Ferramentas</a>
+        <a id="nav-planilhas" href="/planilhas/">Planilhas</a>
       </nav>
     </div>
   </header>
 
   <main class="container">
-    <section class="hero">
+    <section class="heroCard">
       <h1>Calculadora de Reajuste de Aluguel</h1>
-      <p>
-        Você informa <b>aluguel</b>, <b>data de início</b>, <b>índice</b> e <b>periodicidade</b>.
-        O sistema busca os dados oficiais na API do Banco Central (SGS) e calcula o reajuste.
-      </p>
+      <p>Você informa <b>aluguel</b>, <b>data de início</b>, <b>índice</b> e <b>periodicidade</b>. O sistema busca os dados oficiais na API do Banco Central (SGS) e calcula o reajuste.</p>
     </section>
 
     <section class="grid2">
-      <!-- COLUNA ESQUERDA -->
       <div class="panel">
-        <div class="head">
+        <div class="panelHead">
           <h2>Dados</h2>
           <p>O período considerado vai do mês inicial até o mês anterior ao reajuste.</p>
         </div>
-
-        <div class="body">
+        <div class="panelBody">
           <div class="formGrid">
             <div class="field">
-              <label for="aluguel">Valor do aluguel (R$)</label>
-              <input id="aluguel" type="text" inputmode="numeric" autocomplete="off" placeholder="Ex.: 10000 ou 10.000,00" />
-              <div class="help">Dica: digite <b>10000</b> e ao sair vira <b>R$ 10.000,00</b>.</div>
+              <label for="rentInput">Valor do aluguel (R$)</label>
+              <input id="rentInput" placeholder="Ex.: 10000 ou 10.000,00" inputmode="numeric" />
+              <div class="hint">Dica: digite <b>10000</b> e ao sair vira <b>R$ 10.000,00</b>.</div>
             </div>
 
             <div class="field">
-              <label for="indice">Índice</label>
-              <select id="indice"></select>
-              <div class="help">Índices oficiais via SGS/BCB.</div>
+              <label for="indexSelect">Índice</label>
+              <select id="indexSelect">
+                <option value="190">IGP-DI (FGV) — SGS 190</option>
+                <option value="189">IGP-M (FGV) — SGS 189</option>
+                <option value="433">IPCA (IBGE) — SGS 433</option>
+                <option value="11773">IPC-FIPE — SGS 11773</option>
+              </select>
+              <div class="hint">Índices oficiais via SGS/BCB.</div>
             </div>
 
             <div class="field">
-              <label for="inicio">Data de início do contrato</label>
-              <input id="inicio" type="text" inputmode="numeric" autocomplete="off" placeholder="dd/mm/aaaa" />
-              <div class="help">Máscara: <b>dd/mm/aaaa</b>. (O cálculo é por mês/ano.)</div>
+              <label for="startDate">Data de início do contrato</label>
+              <input id="startDate" placeholder="dd/mm/aaaa" inputmode="numeric" />
+              <div class="hint">Máscara: <b>dd/mm/aaaa</b>. (O cálculo é por mês/ano.)</div>
             </div>
 
             <div class="field">
-              <label for="periodicidade">Periodicidade do reajuste</label>
-              <select id="periodicidade">
+              <label for="periodicity">Periodicidade do reajuste</label>
+              <select id="periodicity">
                 <option value="anual">Anual</option>
                 <option value="mensal">Mensal</option>
               </select>
-              <div class="help">Mensal = +1 mês | Anual = +1 ano.</div>
+              <div class="hint">Mensal = +1 mês | Anual = +1 ano.</div>
             </div>
           </div>
 
-          <div class="rowActions">
-            <label class="check">
-              <input id="travarDeflacao" type="checkbox" />
-              <span>Travar deflação (não reduzir)</span>
+          <div style="margin-top:14px;" class="row">
+            <label class="checkbox" style="flex:1;">
+              <input id="lockDeflation" type="checkbox" />
+              <span><b>Travar deflação</b> (não reduzir)</span>
             </label>
-
-            <button id="btnCalcular" class="btnPrimary" type="button">Calcular</button>
+            <button id="calcBtn" class="btn" style="max-width:240px;">Calcular</button>
           </div>
 
-          <div id="msg" class="msg"></div>
+          <div id="msg" class="msg">Preencha os campos e clique em <b>Calcular</b>.</div>
 
-          <details class="details">
-            <summary>Diagnóstico (URL consultada e valores)</summary>
-            <div class="diag">
-              <div><b>URL:</b> <span id="diagUrl">—</span></div>
-              <div id="diagInfo" class="diagInfo"></div>
-              <div id="diagLista" class="diagList"></div>
+          <details>
+            <summary><b>Diagnóstico</b> (URL consultada e valores)</summary>
+            <div class="detailsBody">
+              <div><b>URL:</b> <span id="diagUrl"></span></div>
+              <div id="diagText" style="margin-top:10px;"></div>
             </div>
           </details>
 
-          <p class="backLink"><a href="/ferramentas/">Voltar para Ferramentas</a></p>
+          <div class="footerNote">
+            <a class="link" href="/ferramentas/">Voltar para Ferramentas</a>.
+          </div>
         </div>
       </div>
 
-      <!-- COLUNA DIREITA -->
       <div class="panel">
-        <div class="head">
+        <div class="panelHead">
           <h2>Resultado</h2>
           <p>Variação acumulada, fator e novo aluguel.</p>
         </div>
-
-        <div class="body">
-          <div class="resultGrid">
-            <div class="resultBox">
-              <div class="k">Data do reajuste</div>
-              <div id="outDataReajuste" class="v">—</div>
-            </div>
-
-            <div class="resultBox">
-              <div class="k">Variação acumulada no período</div>
-              <div id="outVariacao" class="v">—</div>
-            </div>
-
-            <div class="resultBox">
-              <div class="k">Fator aplicado</div>
-              <div id="outFator" class="v">—</div>
-            </div>
-
-            <div class="resultBox">
-              <div class="k">Novo aluguel</div>
-              <div id="outNovoAluguel" class="v">—</div>
-            </div>
+        <div class="panelBody">
+          <div class="kpi">
+            <div class="t">Data do reajuste</div>
+            <div id="outReajuste" class="v">—</div>
           </div>
 
-          <details class="details">
-            <summary>Ver meses e variações utilizadas</summary>
-            <div id="outDetalhes" class="outDetalhes"></div>
+          <div class="kpi">
+            <div class="t">Variação acumulada no período</div>
+            <div id="outVar" class="v">—</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">Fator aplicado</div>
+            <div id="outFactor" class="v">—</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">Novo aluguel</div>
+            <div id="outNewRent" class="v">—</div>
+          </div>
+
+          <div class="msg" id="outInfo">Preencha os campos e clique em Calcular.</div>
+
+          <details>
+            <summary><b>Ver meses e variações utilizadas</b></summary>
+            <div class="detailsBody" id="outDetails"></div>
           </details>
 
-          <div class="source">Fonte: API SGS/BCB.</div>
+          <div class="footerNote">Fonte: API SGS/BCB (via /api/sgs).</div>
         </div>
       </div>
     </section>
   </main>
 
-  <!-- IMPORTANTE: paths corretos (2 níveis acima) -->
-  <script src="../../assets/reajuste.js" defer></script>
+  <script src="../../assets/site.js"></script>
+  <script src="../../assets/reajuste.js"></script>
 </body>
 </html>
