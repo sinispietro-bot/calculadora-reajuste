@@ -1,34 +1,38 @@
 export default async function handler(req, res) {
   try {
-    const serie = String(req.query.serie || '').trim();
-    const start = String(req.query.start || '').trim(); // YYYY-MM-DD
-    const end = String(req.query.end || '').trim();     // YYYY-MM-DD
+    const { serie, start, end } = req.query;
 
     if (!serie || !start || !end) {
-      res.status(400).json({ error: "Parâmetros obrigatórios: serie, start, end (YYYY-MM-DD)" });
-      return;
+      return res.status(400).json({ error: 'Parâmetros obrigatórios: serie, start, end (dd/mm/aaaa)' });
     }
 
-    const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${encodeURIComponent(serie)}/dados?formato=json&dataInicial=${encodeURIComponent(start)}&dataFinal=${encodeURIComponent(end)}`;
+    // Cache no Vercel (ajuda muito na lentidão)
+    res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
+    const url = new URL(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${serie}/dados`);
+    url.searchParams.set('formato', 'json');
+    url.searchParams.set('dataInicial', start);
+    url.searchParams.set('dataFinal', end);
 
-    const r = await fetch(url, { signal: controller.signal, headers: { "Accept": "application/json" } });
-    clearTimeout(timeout);
+    const r = await fetch(url.toString(), {
+      headers: { 'Accept': 'application/json' }
+    });
 
     if (!r.ok) {
-      const text = await r.text().catch(() => "");
-      res.status(502).json({ error: "Falha ao consultar SGS/BCB", status: r.status, details: text.slice(0, 200) });
-      return;
+      const txt = await r.text().catch(() => '');
+      return res.status(r.status).json({ error: 'Erro ao consultar BCB', detail: txt.slice(0, 300) });
     }
 
     const data = await r.json();
+    if (!Array.isArray(data)) {
+      return res.status(500).json({ error: 'Resposta inesperada do BCB (não veio array)' });
+    }
 
-    // cache leve (melhora velocidade em consultas repetidas)
-    res.setHeader("Cache-Control", "s-maxage=1800, stale-while-revalidate=86400");
-    res.status(200).json({ url, data });
+    return res.status(200).json({
+      urlBCB: url.toString(),
+      data
+    });
   } catch (e) {
-    res.status(500).json({ error: "Erro interno /api/sgs", details: String(e?.message || e) });
+    return res.status(500).json({ error: 'Erro interno na API', message: String(e?.message || e) });
   }
 }
