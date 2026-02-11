@@ -475,17 +475,75 @@
     try{
       const { url, data } = await fetchSeries(code, startMonth, endMonthLastDay);
 
-      // fator acumulado = Π(1 + var_mensal/100)
-      let factor = 1;
-      const lines = [];
+let factor = 1;
+const lines = [];
 
-      for(const item of data){
-        const pct = parseBCBPercent(item.valor); // ✅ agora é 0,87 e não 87
-        factor *= (1 + (pct/100));
+if (String(code) === "11773") {
+  // ✅ IPC-FIPE (11773) é ÍNDICE EM NÍVEL (ex.: 704,5341), NÃO é % mensal
+  // Fator = último / primeiro
+  const first = parseBCBPercent(data[0].valor);              // aqui vira número tipo 704.5341
+  const last  = parseBCBPercent(data[data.length - 1].valor);
 
-        const pctFmt = pct.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-        lines.push(`${item.data}: ${pctFmt}%`);
-      }
+  if (first <= 0 || last <= 0) throw new Error("IPC-FIPE retornou valores inválidos (<=0).");
+
+  factor = last / first;
+
+  // lista para auditoria (mostra nível do índice e variação acumulada até ali)
+  for (let i = 0; i < data.length; i++) {
+    const level = parseBCBPercent(data[i].valor);
+    const pctFmt = level.toLocaleString('pt-BR', {minimumFractionDigits:4, maximumFractionDigits:4});
+    lines.push(`${data[i].data}: ${pctFmt} (nível)`);
+  }
+
+  // diagnóstico extra
+  setDbg(
+    `URL consultada:\n${url}\n\n` +
+    `IPC-FIPE (nível):\n` +
+    `Primeiro: ${data[0].data} => "${data[0].valor}"\n` +
+    `Último:   ${data[data.length-1].data} => "${data[data.length-1].valor}"\n` +
+    `Fator (último/primeiro): ${factor}\n\n` +
+    `Total de pontos: ${data.length}`
+  );
+
+} else {
+  // ✅ séries de variação (IGP-M, IGP-DI, IPCA): acumulador multiplicativo de % mensais
+  factor = 1;
+  for (const item of data) {
+    const pct = parseBCBPercent(item.valor); // % ao mês
+    factor *= (1 + (pct / 100));
+
+    const pctFmt = pct.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+    lines.push(`${item.data}: ${pctFmt}%`);
+  }
+
+  // diagnóstico padrão
+  const head = data.slice(0, 3).map(x => `${x.data} => valor cru: "${x.valor}"`).join('\n');
+  setDbg(`URL consultada:\n${url}\n\nAmostra (cru):\n${head}\n\nTotal de pontos: ${data.length}`);
+}
+
+// trava deflação
+let applied = factor;
+if (lock && applied < 1) applied = 1;
+
+const newRent = rent * applied;
+const acc = applied - 1;
+
+document.getElementById('adjDate').textContent = fmtBRDate(adjustmentDate);
+document.getElementById('acc').textContent = PCT.format(acc);
+document.getElementById('factor').textContent = applied.toLocaleString('pt-BR', {minimumFractionDigits:6, maximumFractionDigits:6});
+document.getElementById('newRent').textContent = BRL.format(newRent);
+
+document.getElementById('detail').innerHTML =
+  `<b>${idxText}</b><br>` +
+  `Período considerado: <b>${monthLabel(startMonth)}</b> até <b>${monthLabel(endMonthStart)}</b><br>` +
+  `Meses considerados: <b>${data.length}</b><br>` +
+  (lock ? `Deflação: <b>travada</b>` : `Deflação: <b>permitida</b>`);
+
+document.getElementById('details').style.display = 'block';
+document.getElementById('list').textContent = lines.join('\n');
+
+setMsg('ok', 'Cálculo concluído com sucesso.');
+
 
       // trava deflação
       let applied = factor;
