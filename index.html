@@ -2,152 +2,380 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calculadora de Reajuste Contratual</title>
-
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calculadora de Reajuste</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f4f6f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+    :root{
+      --bg:#0b1220;
+      --panel:#0f1a2f;
+      --card:#0f172a;
+      --line:rgba(255,255,255,.10);
+      --text:#e8eefc;
+      --muted:rgba(232,238,252,.70);
+      --muted2:rgba(232,238,252,.55);
+      --input:#0b1326;
+      --btn:#4f46e5;
+      --btn2:#1f2a44;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
+      background:
+        radial-gradient(1100px 500px at 20% 10%, rgba(79,70,229,.35), transparent 55%),
+        radial-gradient(900px 500px at 85% 0%, rgba(16,185,129,.25), transparent 60%),
+        radial-gradient(900px 600px at 50% 100%, rgba(245,158,11,.18), transparent 55%),
+        var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px 16px;
+    }
+    .wrap{
+      width: min(980px, 100%);
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:18px;
+    }
+    .card{
+      background: rgba(15,23,42,.82);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .header{
+      padding:22px 22px 14px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), transparent);
+    }
+    .title{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.2px;
+    }
+    .subtitle{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
     }
 
-    .container {
-      background: white;
-      padding: 40px;
-      width: 420px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    .content{ padding:18px 22px 22px; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:14px;
+    }
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+    }
+    .field label{
+      font-size:13px;
+      color:var(--muted);
+    }
+    .input, select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: var(--input);
+      color:var(--text);
+      outline:none;
+      font-size:14px;
+    }
+    .input:focus, select:focus{
+      border-color: rgba(79,70,229,.55);
+      box-shadow: 0 0 0 4px rgba(79,70,229,.15);
+    }
+    .hint{
+      color:var(--muted2);
+      font-size:12px;
+      line-height:1.35;
     }
 
-    h1 {
-      margin-top: 0;
-      font-size: 22px;
-      color: #1c2b36;
+    .row{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px dashed rgba(255,255,255,.10);
+    }
+    .toggle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--muted);
+      font-size:13px;
+      user-select:none;
+    }
+    .toggle input{ transform: translateY(1px); }
+
+    .actions{
+      display:flex;
+      gap:12px;
+      margin-top:14px;
+    }
+    .btn{
+      flex:1;
+      border:1px solid transparent;
+      border-radius:12px;
+      padding:12px 14px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:14px;
+    }
+    .btn-primary{
+      background: linear-gradient(180deg, rgba(79,70,229,1), rgba(79,70,229,.86));
+      color:#fff;
+    }
+    .btn-primary:hover{ filter:brightness(1.02); }
+    .btn-ghost{
+      background: var(--btn2);
+      border-color: rgba(255,255,255,.12);
+      color: var(--text);
+    }
+    .btn-ghost:hover{ filter:brightness(1.05); }
+
+    .side{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+    .panel{
+      background: rgba(15,23,42,.70);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:18px 18px;
+    }
+    .panel h3{
+      margin:0 0 10px;
+      font-size:14px;
+      color:var(--muted);
+      font-weight:700;
+      letter-spacing:.2px;
+      text-transform: uppercase;
+    }
+    .result{
+      font-size:24px;
+      font-weight:900;
+      margin:4px 0 8px;
+      letter-spacing:.2px;
+    }
+    .meta{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.5;
+      margin:0;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      padding:8px 10px;
+      color:var(--muted);
+      font-size:12px;
+      margin-top:10px;
+      background: rgba(255,255,255,.03);
+    }
+    .dot{
+      width:8px;height:8px;border-radius:50%;
+      background: var(--warn);
+      box-shadow: 0 0 0 4px rgba(245,158,11,.12);
+    }
+    .error{
+      display:none;
+      margin-top:10px;
+      color: rgba(255,255,255,.92);
+      background: rgba(245,158,11,.12);
+      border:1px solid rgba(245,158,11,.25);
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:13px;
     }
 
-    label {
-      font-size: 14px;
-      margin-top: 15px;
-      display: block;
-      color: #333;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
-
-    button {
-      width: 100%;
-      margin-top: 20px;
-      padding: 12px;
-      border: none;
-      background: #0d6efd;
-      color: white;
-      font-size: 15px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #0b5ed7;
-    }
-
-    .resultado {
-      margin-top: 25px;
-      padding: 15px;
-      background: #f1f3f5;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    .info {
-      font-size: 12px;
-      color: #555;
-      margin-top: 10px;
+    @media (max-width: 880px){
+      .wrap{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <div class="card">
+      <div class="header">
+        <h1 class="title">Calculadora de Reajuste</h1>
+        <p class="subtitle">
+          Informe o valor do aluguel e os níveis do índice do período inicial e do período do reajuste.
+          O sistema calcula o valor atualizado e, se desejado, pode travar variação negativa.
+        </p>
+      </div>
 
-<div class="container">
-  <h1>Calculadora de Reajuste Contratual</h1>
+      <div class="content">
+        <div class="grid">
+          <div class="field" style="grid-column:1 / -1;">
+            <label>Valor do aluguel (R$)</label>
+            <input class="input" id="rent" inputmode="decimal" placeholder="Ex: 10.000,00" />
+            <div class="hint">Dica: aceita <b>10.000,00</b> ou <b>10000</b>.</div>
+          </div>
 
-  <label>Valor do aluguel (R$)</label>
-  <input type="number" id="aluguel" placeholder="Ex: 10000">
+          <div class="field">
+            <label>Índice</label>
+            <select id="indexName">
+              <option value="IGP-M">IGP-M</option>
+              <option value="IGP-DI">IGP-DI</option>
+              <option value="IPC-FIPE">IPC-FIPE</option>
+              <option value="IPCA">IPCA</option>
+            </select>
+            <div class="hint">Selecione o índice previsto no contrato.</div>
+          </div>
 
-  <label>Índice</label>
-  <select id="indice">
-    <option>IGP-M</option>
-    <option>IGP-DI</option>
-    <option>IPC-FIPE</option>
-    <option>IPCA</option>
-  </select>
+          <div class="field">
+            <label>Periodicidade</label>
+            <select id="period">
+              <option value="Anual">Anual</option>
+              <option value="Mensal">Mensal</option>
+            </select>
+            <div class="hint">Apenas para referência/relatório.</div>
+          </div>
 
-  <label>Índice inicial (Io)</label>
-  <input type="number" id="io" placeholder="Ex: 1171.210">
+          <div class="field">
+            <label>Índice (mês-base inicial)</label>
+            <input class="input" id="baseIndex" inputmode="decimal" placeholder="Ex: 1171,210" />
+            <div class="hint">Valor do índice no mês-base inicial do contrato.</div>
+          </div>
 
-  <label>Índice final (In)</label>
-  <input type="number" id="in" placeholder="Ex: 1165.984">
+          <div class="field">
+            <label>Índice (mês-base do reajuste)</label>
+            <input class="input" id="finalIndex" inputmode="decimal" placeholder="Ex: 1165,984" />
+            <div class="hint">Valor do índice no mês-base utilizado no reajuste.</div>
+          </div>
+        </div>
 
-  <label>
-    <input type="checkbox" id="travar">
-    Travar deflação
-  </label>
+        <div class="row">
+          <div class="toggle">
+            <input id="lockDeflation" type="checkbox" />
+            <span>Travar deflação (não reduzir valor)</span>
+          </div>
+        </div>
 
-  <button onclick="calcular()">Calcular</button>
+        <div class="actions">
+          <button class="btn btn-ghost" type="button" onclick="fillExample()">Preencher exemplo</button>
+          <button class="btn btn-primary" type="button" onclick="calculate()">Calcular reajuste</button>
+        </div>
 
-  <div class="resultado" id="resultado">
-    Resultado aparecerá aqui
+        <div id="error" class="error">Preencha corretamente o aluguel e os dois valores do índice. O valor inicial deve ser maior que zero.</div>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="panel">
+        <h3>Resultado</h3>
+        <div class="result" id="result">—</div>
+        <p class="meta" id="meta">
+          Informe os dados ao lado e clique em <b>Calcular reajuste</b>.
+        </p>
+        <div class="badge" id="badge" style="display:none;">
+          <span class="dot"></span>
+          <span id="badgeText">Trava de deflação ativa</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Notas</h3>
+        <p class="meta" style="margin:0;">
+          • O cálculo considera os níveis informados do índice.<br>
+          • A trava de deflação, quando ativada, impede redução do valor calculado.<br>
+          • Os dados de índice devem ser obtidos em fonte oficial.
+        </p>
+      </div>
+    </div>
   </div>
 
-  <div class="info">
-    Fórmula aplicada: Aluguel × (In ÷ Io).  
-    Se "Travar deflação" estiver ativo, o fator mínimo aplicado será 1.
-  </div>
-</div>
+  <script>
+    function parseBRNumber(v){
+      if(!v) return NaN;
+      v = String(v).trim().replace(/\s/g,'');
+      // remove pontos de milhar (10.000,00)
+      v = v.replace(/\.(?=\d{3}(\D|$))/g, '');
+      // troca vírgula por ponto
+      v = v.replace(',', '.');
+      // mantém apenas números, ponto e sinal
+      v = v.replace(/[^0-9.-]/g,'');
+      return parseFloat(v);
+    }
 
-<script>
-function calcular() {
-  let aluguel = parseFloat(document.getElementById("aluguel").value);
-  let io = parseFloat(document.getElementById("io").value);
-  let iN = parseFloat(document.getElementById("in").value);
-  let travar = document.getElementById("travar").checked;
+    function moneyBR(n){
+      return n.toLocaleString("pt-BR", {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
 
-  if (!aluguel || !io || !iN) {
-    document.getElementById("resultado").innerText =
-      "Preencha todos os campos corretamente.";
-    return;
-  }
+    function calculate(){
+      const rent = parseBRNumber(document.getElementById("rent").value);
+      const baseIndex = parseBRNumber(document.getElementById("baseIndex").value);
+      const finalIndex = parseBRNumber(document.getElementById("finalIndex").value);
+      const lock = document.getElementById("lockDeflation").checked;
 
-  let fator = iN / io;
+      const error = document.getElementById("error");
+      const result = document.getElementById("result");
+      const meta = document.getElementById("meta");
+      const badge = document.getElementById("badge");
+      const badgeText = document.getElementById("badgeText");
 
-  if (travar && fator < 1) {
-    fator = 1;
-  }
+      if(!isFinite(rent) || !isFinite(baseIndex) || !isFinite(finalIndex) || baseIndex <= 0){
+        error.style.display = "block";
+        result.textContent = "—";
+        meta.innerHTML = 'Informe os dados ao lado e clique em <b>Calcular reajuste</b>.';
+        badge.style.display = "none";
+        return;
+      }
 
-  let novoAluguel = aluguel * fator;
+      let factor = finalIndex / baseIndex;
+      if(lock && factor < 1) factor = 1;
 
-  document.getElementById("resultado").innerText =
-    "Aluguel reajustado: R$ " +
-    novoAluguel.toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-}
-</script>
+      const adjusted = rent * factor;
 
+      const idx = document.getElementById("indexName").value;
+      const period = document.getElementById("period").value;
+
+      result.textContent = `R$ ${moneyBR(adjusted)}`;
+
+      meta.innerHTML =
+        `Índice: <b>${idx}</b> · Periodicidade: <b>${period}</b><br>` +
+        `Base inicial: <b>${baseIndex.toLocaleString("pt-BR")}</b> · Base do reajuste: <b>${finalIndex.toLocaleString("pt-BR")}</b>`;
+
+      if(lock){
+        badgeText.textContent = "Trava de deflação ativa";
+        badge.style.display = "inline-flex";
+      }else{
+        badge.style.display = "none";
+      }
+
+      error.style.display = "none";
+    }
+
+    function fillExample(){
+      // Exemplo usando os valores que você já tinha citado (IGP-DI)
+      document.getElementById("rent").value = "10000";
+      document.getElementById("indexName").value = "IGP-DI";
+      document.getElementById("period").value = "Anual";
+      document.getElementById("baseIndex").value = "1171,210";
+      document.getElementById("finalIndex").value = "1165,984";
+      document.getElementById("lockDeflation").checked = false;
+      calculate();
+    }
+  </script>
 </body>
 </html>
-
