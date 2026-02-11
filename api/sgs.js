@@ -1,41 +1,34 @@
-// /api/sgs.js
 export default async function handler(req, res) {
   try {
-    const serie = String(req.query.serie || "").trim();
-    const dataInicial = String(req.query.dataInicial || "").trim(); // dd/mm/aaaa
-    const dataFinal = String(req.query.dataFinal || "").trim();     // dd/mm/aaaa
+    const serie = String(req.query.serie || '').trim();
+    const start = String(req.query.start || '').trim(); // YYYY-MM-DD
+    const end = String(req.query.end || '').trim();     // YYYY-MM-DD
 
-    if (!serie) return res.status(400).json({ error: "Parâmetro obrigatório: serie" });
-    if (!/^\d+$/.test(serie)) return res.status(400).json({ error: "Parâmetro serie inválido" });
-
-    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dataInicial) || !/^\d{2}\/\d{2}\/\d{4}$/.test(dataFinal)) {
-      return res.status(400).json({ error: "datas devem estar em dd/mm/aaaa (dataInicial e dataFinal)" });
+    if (!serie || !start || !end) {
+      res.status(400).json({ error: "Parâmetros obrigatórios: serie, start, end (YYYY-MM-DD)" });
+      return;
     }
 
-    const url =
-      `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${encodeURIComponent(serie)}/dados` +
-      `?formato=json&dataInicial=${encodeURIComponent(dataInicial)}&dataFinal=${encodeURIComponent(dataFinal)}`;
+    const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${encodeURIComponent(serie)}/dados?formato=json&dataInicial=${encodeURIComponent(start)}&dataFinal=${encodeURIComponent(end)}`;
 
-    res.setHeader("Cache-Control", "public, s-maxage=86400, stale-while-revalidate=604800");
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
 
-    const resp = await fetch(url);
-    if (!resp.ok) {
-      const txt = await resp.text().catch(() => "");
-      return res.status(502).json({ error: "Falha ao consultar SGS/BCB", status: resp.status, detail: txt, url });
+    const r = await fetch(url, { signal: controller.signal, headers: { "Accept": "application/json" } });
+    clearTimeout(timeout);
+
+    if (!r.ok) {
+      const text = await r.text().catch(() => "");
+      res.status(502).json({ error: "Falha ao consultar SGS/BCB", status: r.status, details: text.slice(0, 200) });
+      return;
     }
 
-    const data = await resp.json();
-    const normalized = Array.isArray(data)
-      ? data
-          .map((r) => ({
-            data: r.data,
-            valor: typeof r.valor === "string" ? Number(String(r.valor).replace(",", ".")) : Number(r.valor),
-          }))
-          .filter((r) => r.data && Number.isFinite(r.valor))
-      : [];
+    const data = await r.json();
 
-    return res.status(200).json({ serie: Number(serie), dataInicial, dataFinal, dados: normalized, url });
-  } catch (err) {
-    return res.status(500).json({ error: "Erro interno", detail: String(err?.message || err) });
+    // cache leve (melhora velocidade em consultas repetidas)
+    res.setHeader("Cache-Control", "s-maxage=1800, stale-while-revalidate=86400");
+    res.status(200).json({ url, data });
+  } catch (e) {
+    res.status(500).json({ error: "Erro interno /api/sgs", details: String(e?.message || e) });
   }
 }
