@@ -20,8 +20,16 @@
       --ok:#33d17a;
       --shadow:0 18px 60px rgba(0,0,0,.45);
       --radius:18px;
+
+      /* Select dropdown colors (fix “white options”) */
+      --select-bg:#0f1a2b;
+      --select-opt:#0c1524;
+      --select-opt-hover:#163253;
+      --select-text:#e9f0ff;
     }
+
     *{box-sizing:border-box}
+
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
@@ -37,6 +45,7 @@
       justify-content:center;
       padding:28px 14px;
     }
+
     .wrap{
       width:min(980px, 100%);
       display:grid;
@@ -52,11 +61,13 @@
       box-shadow:var(--shadow);
       overflow:hidden;
     }
+
     .header{
       padding:22px 22px 10px;
       border-bottom:1px solid var(--line);
       background: linear-gradient(180deg, rgba(255,255,255,.05), transparent);
     }
+
     .title{
       margin:0;
       font-size:20px;
@@ -66,6 +77,7 @@
       align-items:center;
       flex-wrap:wrap;
     }
+
     .badge{
       font-size:12px;
       padding:6px 10px;
@@ -74,12 +86,14 @@
       color:var(--muted);
       background:rgba(255,255,255,.04);
     }
+
     .subtitle{
       margin:10px 0 0;
       color:var(--muted);
       font-size:13px;
       line-height:1.45;
     }
+
     .content{ padding:18px 22px 22px; }
 
     .grid{
@@ -90,6 +104,7 @@
     @media (max-width: 560px){ .grid{ grid-template-columns:1fr; } }
 
     label{ display:block; font-size:12px; color:var(--muted); margin:0 0 6px; }
+
     .field{
       width:100%;
       padding:12px 12px;
@@ -99,11 +114,29 @@
       color:var(--text);
       outline:none;
       font-size:14px;
+      appearance:none;
+      -webkit-appearance:none;
     }
+
     .field:focus{
       border-color: rgba(79,140,255,.65);
       box-shadow: 0 0 0 4px rgba(79,140,255,.12);
     }
+
+    /* Fix dropdown (options list) */
+    select.field{
+      background-color: var(--select-bg);
+      color: var(--select-text);
+    }
+    select.field option{
+      background: var(--select-opt);
+      color: var(--select-text);
+    }
+    select.field option:checked{
+      background: var(--select-opt-hover);
+      color: var(--select-text);
+    }
+
     .hint{ margin-top:6px; font-size:12px; color:var(--muted2); line-height:1.35; }
 
     .row{
@@ -113,6 +146,7 @@
       flex-wrap:wrap;
       margin-top:14px;
     }
+
     .switch{
       display:flex;
       align-items:center;
@@ -161,6 +195,7 @@
       border-radius:var(--radius);
       padding:16px;
     }
+
     .k{
       border:1px solid var(--line);
       background:rgba(255,255,255,.04);
@@ -170,12 +205,14 @@
     }
     .k .h{ margin:0 0 6px; font-size:12px; color:var(--muted); }
     .k .v{ margin:0; font-size:18px; font-weight:900; letter-spacing:.2px; }
+
     .note{
       margin-top:12px;
       font-size:12px;
       color:var(--muted);
       line-height:1.55;
     }
+
     details{
       margin-top:12px;
       border:1px solid var(--line);
@@ -213,7 +250,7 @@
         </h1>
         <p class="subtitle">
           Você informa <b>aluguel</b>, <b>data de início</b>, <b>índice</b> e <b>periodicidade</b>.
-          O sistema busca as variações mensais na API do Banco Central (SGS) e calcula o reajuste.
+          O sistema busca dados na API do Banco Central (SGS) e calcula o reajuste.
         </p>
       </div>
 
@@ -228,12 +265,15 @@
           <div>
             <label for="index">Índice</label>
             <select id="index" class="field">
-              <option value="189">IGP-M (FGV) — SGS 189</option>
-              <option value="190">IGP-DI (FGV) — SGS 190</option>
-              <option value="433">IPCA (IBGE) — SGS 433</option>
-              <option value="11773">IPC-FIPE — SGS 11773</option>
+              <!-- Variações mensais (%) -->
+              <option value="189" data-type="pct">IGP-M (FGV) — SGS 189</option>
+              <option value="190" data-type="pct">IGP-DI (FGV) — SGS 190</option>
+              <option value="433" data-type="pct">IPCA (IBGE) — SGS 433</option>
+
+              <!-- Nível do índice (não é %) -->
+              <option value="11773" data-type="level">IPC-FIPE — SGS 11773</option>
             </select>
-            <div class="hint">Selecione o índice previsto no contrato.</div>
+            <div class="hint" id="indexHint">Selecione o índice previsto no contrato.</div>
           </div>
 
           <div>
@@ -264,7 +304,7 @@
         <div id="msg" class="alert"></div>
 
         <div class="hint" style="margin-top:10px;">
-          Regra aplicada: acumula as variações mensais do índice no período e aplica no aluguel.
+          Regra aplicada: acumula as variações mensais (quando disponível) ou usa relação de níveis (IPC-FIPE).
         </div>
 
         <details style="margin-top:12px;">
@@ -302,7 +342,7 @@
           <div class="note" id="detail">Preencha os campos e clique em <b>Calcular</b>.</div>
 
           <details id="details" style="display:none;">
-            <summary>Ver meses e variações utilizadas</summary>
+            <summary id="listTitle">Ver meses e variações utilizadas</summary>
             <pre id="list"></pre>
           </details>
 
@@ -313,38 +353,38 @@
   </div>
 
 <script>
-  // ================== Formatação ==================
+  // ================== Formatadores ==================
   const BRL = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
   const PCT = new Intl.NumberFormat('pt-BR', { style:'percent', minimumFractionDigits:2, maximumFractionDigits:2 });
 
   function parseMoneySmart(v){
     if(!v) return NaN;
     v = String(v).trim().replace(/\s/g,'');
-    // remove "R$"
     v = v.replace(/^R\$\s?/i,'');
-    // se tiver vírgula, assume pt-BR: 10.000,00
-    if (v.includes(',')) {
-      v = v.replace(/\./g,'').replace(',', '.');
-    } else {
-      // se não tiver vírgula, pode ser 10000 ou 10000.50
-      // mantém ponto decimal se existir
-      v = v;
-    }
+    if (v.includes(',')) v = v.replace(/\./g,'').replace(',', '.'); // pt-BR
     v = v.replace(/[^0-9.-]/g,'');
     const n = Number(v);
     return Number.isFinite(n) ? n : NaN;
   }
 
-  const rentEl = document.getElementById('rent');
-  rentEl.addEventListener('blur', () => {
-    const n = parseMoneySmart(rentEl.value);
-    if(Number.isFinite(n)) rentEl.value = BRL.format(n);
-  });
-  rentEl.addEventListener('focus', () => {
-    rentEl.value = rentEl.value.replace(/[R$\s]/g,'').trim();
-  });
+  // ================== UI helpers ==================
+  function setMsg(type, text){
+    const el = document.getElementById('msg');
+    el.className = 'alert ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : '');
+    el.textContent = text;
+    el.style.display = 'block';
+  }
+  function clearMsg(){
+    const el = document.getElementById('msg');
+    el.style.display = 'none';
+    el.textContent = '';
+    el.className = 'alert';
+  }
+  function setDbg(text){
+    document.getElementById('dbg').textContent = text || '—';
+  }
 
-  // máscara data dd/mm/aaaa
+  // ================== Máscara data dd/mm/aaaa ==================
   const startEl = document.getElementById('start');
   startEl.addEventListener('input', () => {
     let v = startEl.value.replace(/\D/g,'').slice(0,8);
@@ -361,25 +401,32 @@
     if(dt.getFullYear() !== y || dt.getMonth() !== (mo-1) || dt.getDate() !== d) return null;
     return dt;
   }
-
   function fmtBRDate(dt){
     const z = n => String(n).padStart(2,'0');
     return `${z(dt.getDate())}/${z(dt.getMonth()+1)}/${dt.getFullYear()}`;
   }
-
   function monthStart(dt){ return new Date(dt.getFullYear(), dt.getMonth(), 1); }
   function addMonths(dt, months){ return new Date(dt.getFullYear(), dt.getMonth()+months, dt.getDate()); }
-
   function monthLabel(dt){
     return dt.toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
   }
+
+  // ================== Moeda (UX) ==================
+  const rentEl = document.getElementById('rent');
+  rentEl.addEventListener('blur', () => {
+    const n = parseMoneySmart(rentEl.value);
+    if(Number.isFinite(n)) rentEl.value = BRL.format(n);
+  });
+  rentEl.addEventListener('focus', () => {
+    // deixa mais fácil editar
+    rentEl.value = rentEl.value.replace(/[R$\s]/g,'').trim();
+  });
 
   // ================== BCB / SGS ==================
   function toBCBDate(dt){
     const z = n => String(n).padStart(2,'0');
     return `${z(dt.getDate())}/${z(dt.getMonth()+1)}/${dt.getFullYear()}`;
   }
-
   async function fetchSeries(code, dStart, dEnd){
     const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados?formato=json&dataInicial=${encodeURIComponent(toBCBDate(dStart))}&dataFinal=${encodeURIComponent(toBCBDate(dEnd))}`;
     const res = await fetch(url, { cache:"no-store" });
@@ -389,42 +436,39 @@
     return { url, data };
   }
 
-  // ✅ Parsing robusto: aceita "0,87" e "0.87" e negativos
-  function parseBCBPercent(v){
+  // parse robusto (pt-BR com vírgula OU ponto)
+  function parseBCBNumber(v){
     const raw = String(v).trim();
-
-    // pt-BR: "0,87"
     if (raw.includes(',')) {
       const s = raw.replace(/\./g,'').replace(',', '.'); // remove milhares, vírgula vira decimal
       const n = Number(s);
       if (!Number.isFinite(n)) throw new Error(`Valor inválido retornado pela API: "${v}"`);
       return n;
     }
-
-    // en: "0.87"
     const n = Number(raw);
     if (!Number.isFinite(n)) throw new Error(`Valor inválido retornado pela API: "${v}"`);
     return n;
   }
 
-  // ================== UI helpers ==================
-  function setMsg(type, text){
-    const el = document.getElementById('msg');
-    el.className = 'alert ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : '');
-    el.textContent = text;
-    el.style.display = 'block';
-  }
+  // ================== Tipo do índice (pct vs level) ==================
+  const indexEl = document.getElementById('index');
+  const indexHintEl = document.getElementById('indexHint');
+  const listTitleEl = document.getElementById('listTitle');
 
-  function clearMsg(){
-    const el = document.getElementById('msg');
-    el.style.display = 'none';
-    el.textContent = '';
-    el.className = 'alert';
+  function currentIndexType(){
+    return indexEl.selectedOptions[0]?.dataset?.type || 'pct';
   }
-
-  function setDbg(text){
-    document.getElementById('dbg').textContent = text;
+  function refreshHints(){
+    if (currentIndexType() === 'level'){
+      indexHintEl.textContent = 'IPC-FIPE é um índice em nível (não é %). O fator é calculado por (último/primeiro).';
+      listTitleEl.textContent = 'Ver meses e níveis do índice utilizados';
+    } else {
+      indexHintEl.textContent = 'Selecione o índice previsto no contrato.';
+      listTitleEl.textContent = 'Ver meses e variações utilizadas';
+    }
   }
+  indexEl.addEventListener('change', refreshHints);
+  refreshHints();
 
   // ================== Cálculo ==================
   async function calculate(){
@@ -444,20 +488,17 @@
 
     const months = Number(document.getElementById('periodicity').value); // 1 ou 12
     const lock = document.getElementById('lockDeflation').checked;
-    const code = document.getElementById('index').value;
-    const idxText = document.getElementById('index').selectedOptions[0].textContent;
+    const code = String(indexEl.value);
+    const idxText = indexEl.selectedOptions[0].textContent;
+    const type = currentIndexType();
 
-    // data do reajuste = data início + periodicidade
     const adjustmentDate = addMonths(startDate, months);
 
-    // janela de cálculo:
-    // mês inicial (1º dia do mês)
-    // até o mês anterior ao reajuste (último dia do mês anterior)
+    // mês inicial até mês anterior ao reajuste
     const startMonth = monthStart(startDate);
     const endMonthStart = monthStart(addMonths(adjustmentDate, -1));
     const endMonthLastDay = new Date(endMonthStart.getFullYear(), endMonthStart.getMonth()+1, 0);
 
-    // limite 10 anos (120 meses)
     const diffMonths = (endMonthStart.getFullYear()-startMonth.getFullYear())*12 + (endMonthStart.getMonth()-startMonth.getMonth()) + 1;
     if(diffMonths > 120){
       setMsg('err', 'Período muito longo. Limite a no máximo 10 anos.');
@@ -475,75 +516,45 @@
     try{
       const { url, data } = await fetchSeries(code, startMonth, endMonthLastDay);
 
-let factor = 1;
-const lines = [];
+      let factor = 1;
+      const lines = [];
 
-if (String(code) === "11773") {
-  // ✅ IPC-FIPE (11773) é ÍNDICE EM NÍVEL (ex.: 704,5341), NÃO é % mensal
-  // Fator = último / primeiro
-  const first = parseBCBPercent(data[0].valor);              // aqui vira número tipo 704.5341
-  const last  = parseBCBPercent(data[data.length - 1].valor);
+      if (type === 'level') {
+        // ✅ IPC-FIPE: série em NÍVEL (ex.: 704,5341). Não acumula % mensal.
+        const first = parseBCBNumber(data[0].valor);
+        const last  = parseBCBNumber(data[data.length - 1].valor);
+        if (first <= 0 || last <= 0) throw new Error('IPC-FIPE retornou valores inválidos (<=0).');
 
-  if (first <= 0 || last <= 0) throw new Error("IPC-FIPE retornou valores inválidos (<=0).");
+        factor = last / first;
 
-  factor = last / first;
+        for (const item of data) {
+          const level = parseBCBNumber(item.valor);
+          const lvlFmt = level.toLocaleString('pt-BR', {minimumFractionDigits:4, maximumFractionDigits:4});
+          lines.push(`${item.data}: ${lvlFmt} (nível)`);
+        }
 
-  // lista para auditoria (mostra nível do índice e variação acumulada até ali)
-  for (let i = 0; i < data.length; i++) {
-    const level = parseBCBPercent(data[i].valor);
-    const pctFmt = level.toLocaleString('pt-BR', {minimumFractionDigits:4, maximumFractionDigits:4});
-    lines.push(`${data[i].data}: ${pctFmt} (nível)`);
-  }
+        setDbg(
+          `URL consultada:\n${url}\n\n` +
+          `Tipo: NÍVEL (IPC-FIPE)\n` +
+          `Primeiro: ${data[0].data} => "${data[0].valor}"\n` +
+          `Último:   ${data[data.length-1].data} => "${data[data.length-1].valor}"\n` +
+          `Fator (último/primeiro): ${factor}\n\n` +
+          `Total de pontos: ${data.length}`
+        );
+      } else {
+        // ✅ variações mensais em %: acumulador multiplicativo
+        factor = 1;
+        for (const item of data) {
+          const pct = parseBCBNumber(item.valor); // % ao mês
+          factor *= (1 + (pct / 100));
 
-  // diagnóstico extra
-  setDbg(
-    `URL consultada:\n${url}\n\n` +
-    `IPC-FIPE (nível):\n` +
-    `Primeiro: ${data[0].data} => "${data[0].valor}"\n` +
-    `Último:   ${data[data.length-1].data} => "${data[data.length-1].valor}"\n` +
-    `Fator (último/primeiro): ${factor}\n\n` +
-    `Total de pontos: ${data.length}`
-  );
+          const pctFmt = pct.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+          lines.push(`${item.data}: ${pctFmt}%`);
+        }
 
-} else {
-  // ✅ séries de variação (IGP-M, IGP-DI, IPCA): acumulador multiplicativo de % mensais
-  factor = 1;
-  for (const item of data) {
-    const pct = parseBCBPercent(item.valor); // % ao mês
-    factor *= (1 + (pct / 100));
-
-    const pctFmt = pct.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-    lines.push(`${item.data}: ${pctFmt}%`);
-  }
-
-  // diagnóstico padrão
-  const head = data.slice(0, 3).map(x => `${x.data} => valor cru: "${x.valor}"`).join('\n');
-  setDbg(`URL consultada:\n${url}\n\nAmostra (cru):\n${head}\n\nTotal de pontos: ${data.length}`);
-}
-
-// trava deflação
-let applied = factor;
-if (lock && applied < 1) applied = 1;
-
-const newRent = rent * applied;
-const acc = applied - 1;
-
-document.getElementById('adjDate').textContent = fmtBRDate(adjustmentDate);
-document.getElementById('acc').textContent = PCT.format(acc);
-document.getElementById('factor').textContent = applied.toLocaleString('pt-BR', {minimumFractionDigits:6, maximumFractionDigits:6});
-document.getElementById('newRent').textContent = BRL.format(newRent);
-
-document.getElementById('detail').innerHTML =
-  `<b>${idxText}</b><br>` +
-  `Período considerado: <b>${monthLabel(startMonth)}</b> até <b>${monthLabel(endMonthStart)}</b><br>` +
-  `Meses considerados: <b>${data.length}</b><br>` +
-  (lock ? `Deflação: <b>travada</b>` : `Deflação: <b>permitida</b>`);
-
-document.getElementById('details').style.display = 'block';
-document.getElementById('list').textContent = lines.join('\n');
-
-setMsg('ok', 'Cálculo concluído com sucesso.');
-
+        const head = data.slice(0, 3).map(x => `${x.data} => valor cru: "${x.valor}"`).join('\n');
+        setDbg(`URL consultada:\n${url}\n\nAmostra (cru):\n${head}\n\nTotal de pontos: ${data.length}`);
+      }
 
       // trava deflação
       let applied = factor;
@@ -566,16 +577,12 @@ setMsg('ok', 'Cálculo concluído com sucesso.');
       document.getElementById('details').style.display = 'block';
       document.getElementById('list').textContent = lines.join('\n');
 
-      // diagnóstico: mostra URL e primeiros valores crus (pra você conferir que vem 0,87 etc.)
-      const head = data.slice(0, 3).map(x => `${x.data} => valor cru: "${x.valor}"`).join('\n');
-      setDbg(`URL consultada:\n${url}\n\nAmostra (cru):\n${head}\n\nTotal de pontos: ${data.length}`);
-
       setMsg('ok', 'Cálculo concluído com sucesso.');
-    }catch(e){
+    } catch(e){
       console.error(e);
-      setDbg(String(e));
-      setMsg('err', e.message || 'Erro ao calcular. Tente novamente.');
-    }finally{
+      setDbg(String(e?.message || e));
+      setMsg('err', e?.message || 'Erro ao calcular. Tente novamente.');
+    } finally{
       btn.disabled = false;
       btn.textContent = 'Calcular';
     }
@@ -583,13 +590,14 @@ setMsg('ok', 'Cálculo concluído com sucesso.');
 
   document.getElementById('btn').addEventListener('click', calculate);
 
-  // exemplo inicial
+  // Preset para testar rápido
   (function preset(){
     rentEl.value = BRL.format(10000);
     startEl.value = '01/12/2024';
-    document.getElementById('index').value = '190'; // IGP-DI
-    document.getElementById('periodicity').value = '12'; // anual
+    indexEl.value = '190';
+    document.getElementById('periodicity').value = '12';
     setDbg('—');
+    refreshHints();
   })();
 </script>
 </body>
