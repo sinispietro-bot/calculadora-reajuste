@@ -3,34 +3,33 @@ export default async function handler(req, res) {
     const { serie, dataInicial, dataFinal } = req.query;
 
     if (!serie || !dataInicial || !dataFinal) {
-      return res.status(400).json({
-        error: "Parâmetros obrigatórios: serie, dataInicial, dataFinal",
-      });
+      res.status(400).json({ error: "Parâmetros obrigatórios: serie, dataInicial, dataFinal" });
+      return;
     }
 
     const url =
-      `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${encodeURIComponent(serie)}` +
-      `/dados?formato=json&dataInicial=${encodeURIComponent(dataInicial)}` +
-      `&dataFinal=${encodeURIComponent(dataFinal)}`;
+      `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${encodeURIComponent(serie)}/dados` +
+      `?formato=json&dataInicial=${encodeURIComponent(dataInicial)}&dataFinal=${encodeURIComponent(dataFinal)}`;
 
     const r = await fetch(url, {
       headers: {
-        "User-Agent": "shopping-center-tools",
         "Accept": "application/json",
+        "User-Agent": "reajuste-site/1.0",
       },
     });
 
     if (!r.ok) {
-      const text = await r.text();
-      return res.status(r.status).send(text);
+      const txt = await r.text();
+      res.status(r.status).send(txt);
+      return;
     }
 
     const data = await r.json();
 
-    // Cache no edge da Vercel (ajuda MUITO a ficar rápido)
-    res.setHeader("Cache-Control", "s-maxage=86400, stale-while-revalidate=604800");
+    // Cache no Vercel (CDN) para acelerar (10 min)
+    res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=3600");
     res.status(200).json(data);
   } catch (e) {
-    res.status(500).json({ error: "Falha ao consultar BCB", details: String(e) });
+    res.status(500).json({ error: String(e?.message || e) });
   }
 }
