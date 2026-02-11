@@ -1,35 +1,63 @@
+// /api/sgs.js
 export default async function handler(req, res) {
   try {
-    const { serie, dataInicial, dataFinal } = req.query;
+    const serie = String(req.query.serie || "").trim();
+    const dataInicial = String(req.query.dataInicial || "").trim(); // dd/mm/aaaa
+    const dataFinal = String(req.query.dataFinal || "").trim();     // dd/mm/aaaa
 
-    if (!serie || !dataInicial || !dataFinal) {
-      res.status(400).json({ error: "Parâmetros obrigatórios: serie, dataInicial, dataFinal" });
-      return;
+    if (!serie) {
+      return res.status(400).json({ error: "Parâmetro obrigatório: serie" });
+    }
+    if (!/^\d+$/.test(serie)) {
+      return res.status(400).json({ error: "Parâmetro serie inválido" });
+    }
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dataInicial) || !/^\d{2}\/\d{2}\/\d{4}$/.test(dataFinal)) {
+      return res.status(400).json({ error: "datas devem estar em dd/mm/aaaa (dataInicial e dataFinal)" });
     }
 
     const url =
       `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${encodeURIComponent(serie)}/dados` +
       `?formato=json&dataInicial=${encodeURIComponent(dataInicial)}&dataFinal=${encodeURIComponent(dataFinal)}`;
 
-    const r = await fetch(url, {
-      headers: {
-        "Accept": "application/json",
-        "User-Agent": "reajuste-site/1.0",
-      },
+    // Cache no CDN da Vercel (deixa a calculadora bem mais rápida)
+    res.setHeader("Cache-Control", "public, s-maxage=86400, stale-while-revalidate=604800");
+
+    const resp = await fetch(url, {
+      headers: { "User-Agent": "calculadora-reajuste (Vercel)" },
     });
 
-    if (!r.ok) {
-      const txt = await r.text();
-      res.status(r.status).send(txt);
-      return;
+    if (!resp.ok) {
+      const txt = await resp.text().catch(() => "");
+      return res.status(502).json({
+        error: "Falha ao consultar SGS/BCB",
+        status: resp.status,
+        detail: txt?.slice?.(0, 2000) || "",
+        url,
+      });
     }
 
-    const data = await r.json();
+    const data = await resp.json();
+    // Normaliza "valor" para número
+    const normalized = Array.isArray(data)
+      ? data
+          .map((r) => ({
+            data: r.data,
+            valor: typeof r.valor === "string" ? Number(String(r.valor).replace(",", ".")) : Number(r.valor),
+          }))
+          .filter((r) => r.data && Number.isFinite(r.valor))
+      : [];
 
-    // Cache no Vercel (CDN) para acelerar (10 min)
-    res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=3600");
-    res.status(200).json(data);
-  } catch (e) {
-    res.status(500).json({ error: String(e?.message || e) });
+    return res.status(200).json({
+      serie: Number(serie),
+      dataInicial,
+      dataFinal,
+      dados: normalized,
+      url,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      error: "Erro interno",
+      detail: String(err?.message || err),
+    });
   }
 }
