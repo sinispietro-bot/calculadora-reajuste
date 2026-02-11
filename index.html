@@ -2,603 +2,568 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Calculadora de Reajuste de Aluguel</title>
 
   <style>
     :root{
-      --bg:#0b1220;
-      --card:rgba(255,255,255,.06);
-      --card2:rgba(255,255,255,.08);
-      --text:rgba(255,255,255,.92);
-      --muted:rgba(255,255,255,.66);
-      --muted2:rgba(255,255,255,.52);
-      --line:rgba(255,255,255,.12);
-      --primary:#4f8cff;
-      --accent:#2dd4bf;
-      --danger:#ff5c77;
-      --ok:#33d17a;
-      --shadow:0 18px 60px rgba(0,0,0,.45);
+      --bg1:#070a12;
+      --bg2:#0b1020;
+      --card:#0f172a;
+      --card2:#0b1225;
+      --muted:#9aa4b2;
+      --text:#e6edf6;
+      --line:rgba(255,255,255,.08);
+      --accent:#4f8cff;
+      --accent2:#2dd4bf;
+      --danger:#ff6b6b;
+      --ok:#22c55e;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
       --radius:18px;
-
-      /* Select dropdown colors (fix “white options”) */
-      --select-bg:#0f1a2b;
-      --select-opt:#0c1524;
-      --select-opt-hover:#163253;
-      --select-text:#e9f0ff;
     }
 
     *{box-sizing:border-box}
-
     body{
       margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background:
-        radial-gradient(1100px 600px at 18% 10%, rgba(79,140,255,.22), transparent 55%),
-        radial-gradient(900px 520px at 78% 0%, rgba(45,212,191,.18), transparent 60%),
-        radial-gradient(900px 520px at 80% 90%, rgba(255,92,119,.10), transparent 60%),
-        var(--bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
       color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(79,140,255,.25), transparent 60%),
+        radial-gradient(900px 600px at 85% 20%, rgba(45,212,191,.18), transparent 55%),
+        radial-gradient(1200px 900px at 60% 120%, rgba(120,70,255,.14), transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
       min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:28px 14px;
+      padding:34px 18px;
     }
 
     .wrap{
-      width:min(980px, 100%);
+      max-width:1100px;
+      margin:0 auto;
       display:grid;
-      grid-template-columns: 1.1fr .9fr;
+      grid-template-columns: 1.15fr .85fr;
       gap:18px;
     }
-    @media (max-width: 880px){ .wrap{ grid-template-columns:1fr; } }
 
-    .card{
-      background: linear-gradient(180deg, var(--card), rgba(255,255,255,.04));
+    @media (max-width: 980px){
+      .wrap{grid-template-columns:1fr}
+    }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       border:1px solid var(--line);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
       overflow:hidden;
     }
 
-    .header{
-      padding:22px 22px 10px;
+    .panel .head{
+      padding:22px 22px 16px;
       border-bottom:1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255,255,255,.05), transparent);
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
     }
 
     .title{
       margin:0;
-      font-size:20px;
+      font-size:26px;
       letter-spacing:.2px;
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
     }
 
-    .badge{
+    .pill{
       font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
+      color:var(--text);
       border:1px solid var(--line);
-      color:var(--muted);
-      background:rgba(255,255,255,.04);
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(15,23,42,.55);
+      white-space:nowrap;
     }
 
-    .subtitle{
+    .sub{
       margin:10px 0 0;
       color:var(--muted);
-      font-size:13px;
-      line-height:1.45;
+      font-size:14px;
+      line-height:1.35;
+      max-width:700px;
     }
 
-    .content{ padding:18px 22px 22px; }
+    .body{ padding:18px 22px 22px; }
 
     .grid{
       display:grid;
       grid-template-columns: 1fr 1fr;
       gap:14px;
     }
-    @media (max-width: 560px){ .grid{ grid-template-columns:1fr; } }
+    @media (max-width: 720px){
+      .grid{grid-template-columns:1fr}
+    }
 
-    label{ display:block; font-size:12px; color:var(--muted); margin:0 0 6px; }
+    label{
+      display:block;
+      font-size:13px;
+      color: #cbd5e1;
+      margin:0 0 8px;
+    }
 
     .field{
-      width:100%;
-      padding:12px 12px;
-      border-radius:14px;
+      background: rgba(15,23,42,.7);
       border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      color:var(--text);
+      border-radius:14px;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-height:48px;
+    }
+
+    input, select{
+      width:100%;
+      background: transparent;
+      border:0;
       outline:none;
-      font-size:14px;
-      appearance:none;
-      -webkit-appearance:none;
+      color:var(--text);
+      font-size:15px;
     }
 
-    .field:focus{
-      border-color: rgba(79,140,255,.65);
-      box-shadow: 0 0 0 4px rgba(79,140,255,.12);
-    }
+    input::placeholder{color:rgba(230,237,246,.35)}
 
-    /* Fix dropdown (options list) */
-    select.field{
-      background-color: var(--select-bg);
-      color: var(--select-text);
+    .hint{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.25;
     }
-    select.field option{
-      background: var(--select-opt);
-      color: var(--select-text);
-    }
-    select.field option:checked{
-      background: var(--select-opt-hover);
-      color: var(--select-text);
-    }
-
-    .hint{ margin-top:6px; font-size:12px; color:var(--muted2); line-height:1.35; }
 
     .row{
       display:flex;
-      gap:12px;
       align-items:center;
-      flex-wrap:wrap;
+      justify-content:space-between;
+      gap:14px;
       margin-top:14px;
+      flex-wrap:wrap;
     }
 
-    .switch{
+    .check{
       display:flex;
       align-items:center;
       gap:10px;
       padding:10px 12px;
-      border-radius:14px;
       border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      user-select:none;
-      color:var(--muted);
-      font-size:13px;
+      border-radius:14px;
+      background: rgba(15,23,42,.35);
     }
-    .switch input{ transform: scale(1.05); }
+    .check input{width:auto; transform:scale(1.05);}
 
     .btn{
-      margin-left:auto;
-      background: linear-gradient(90deg, var(--primary), var(--accent));
-      border:0;
-      color:#071019;
-      font-weight:800;
-      padding:12px 16px;
-      border-radius:14px;
       cursor:pointer;
-      min-width:140px;
-    }
-    .btn[disabled]{ opacity:.6; cursor:not-allowed; }
-
-    .alert{
-      margin-top:12px;
+      border:0;
+      padding:12px 18px;
       border-radius:14px;
-      padding:10px 12px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.45;
-      display:none;
+      font-weight:700;
+      font-size:15px;
+      color:#07101f;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      min-width:160px;
     }
-    .alert.ok{ border-color: rgba(51,209,122,.35); background: rgba(51,209,122,.08); color: rgba(255,255,255,.90); }
-    .alert.err{ border-color: rgba(255,92,119,.35); background: rgba(255,92,119,.08); color: rgba(255,255,255,.94); }
+    .btn:disabled{opacity:.55; cursor:not-allowed}
 
-    .side{ padding:18px 22px 22px; }
-    .panel{
-      background: linear-gradient(180deg, var(--card2), rgba(255,255,255,.03));
+    .status{
+      margin-top:14px;
       border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:16px;
-    }
-
-    .k{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
       border-radius:14px;
-      padding:12px;
-      margin-bottom:10px;
+      padding:12px 14px;
+      background: rgba(15,23,42,.35);
+      color: var(--muted);
+      font-size:13px;
     }
-    .k .h{ margin:0 0 6px; font-size:12px; color:var(--muted); }
-    .k .v{ margin:0; font-size:18px; font-weight:900; letter-spacing:.2px; }
+    .status.ok{color:#d1fae5; border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.08);}
+    .status.err{color:#ffe4e6; border-color: rgba(255,107,107,.38); background: rgba(255,107,107,.08);}
 
-    .note{
-      margin-top:12px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.55;
+    .resHead{
+      padding:22px 22px 16px;
+      border-bottom:1px solid var(--line);
     }
+
+    .resTitle{
+      margin:0;
+      font-size:20px;
+    }
+
+    .resSub{ margin:6px 0 0; color:var(--muted); font-size:13px; }
+
+    .cards{ padding:16px 22px 22px; display:grid; gap:12px; }
+
+    .kpi{
+      border:1px solid var(--line);
+      background: rgba(15,23,42,.45);
+      border-radius:16px;
+      padding:14px 14px;
+    }
+    .kpi .k{ color:var(--muted); font-size:12px; margin:0 0 6px;}
+    .kpi .v{ margin:0; font-size:20px; font-weight:800; letter-spacing:.2px;}
 
     details{
-      margin-top:12px;
       border:1px solid var(--line);
-      border-radius:14px;
-      background:rgba(255,255,255,.03);
-      padding:10px 12px;
+      background: rgba(15,23,42,.35);
+      border-radius:16px;
+      padding:12px 14px;
     }
     summary{
       cursor:pointer;
-      color:var(--muted);
-      font-size:12px;
-      user-select:none;
+      color:#cbd5e1;
+      font-weight:650;
+      font-size:13px;
     }
     pre{
       margin:10px 0 0;
       white-space:pre-wrap;
       word-break:break-word;
-      color:rgba(255,255,255,.85);
       font-size:12px;
-      line-height:1.45;
+      color:#e2e8f0;
+      line-height:1.35;
     }
-    .mono{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    /* Corrige dropdown no tema escuro (quando o browser respeita) */
+    select option{
+      background-color:#0b1225;
+      color:#e6edf6;
+    }
+    select optgroup{
+      background-color:#0b1225;
+      color:#cbd5e1;
     }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <div class="card">
-      <div class="header">
-        <h1 class="title">
-          Calculadora de Reajuste de Aluguel
-          <span class="badge">Brasil · índices oficiais</span>
-        </h1>
-        <p class="subtitle">
-          Você informa <b>aluguel</b>, <b>data de início</b>, <b>índice</b> e <b>periodicidade</b>.
-          O sistema busca dados na API do Banco Central (SGS) e calcula o reajuste.
-        </p>
+
+    <!-- ESQUERDA -->
+    <section class="panel">
+      <div class="head">
+        <div>
+          <h1 class="title">Calculadora de Reajuste de Aluguel</h1>
+          <p class="sub">
+            Você informa <b>aluguel</b>, <b>data de início</b>, <b>índice</b> e <b>periodicidade</b>.
+            O sistema busca as variações oficiais no <b>Banco Central (SGS/BCB)</b> e calcula o reajuste acumulado.
+          </p>
+        </div>
+        <div class="pill">Brasil · índices oficiais</div>
       </div>
 
-      <div class="content">
+      <div class="body">
         <div class="grid">
           <div>
             <label for="rent">Valor do aluguel (R$)</label>
-            <input id="rent" class="field" type="text" inputmode="decimal" placeholder="Ex.: 10000 ou 10.000,00" />
-            <div class="hint">Digite <b>10000</b> e ele vira <b>R$ 10.000,00</b> ao sair do campo.</div>
+            <div class="field">
+              <input id="rent" type="text" inputmode="numeric" placeholder="Ex.: 10000 ou 10.000,00" autocomplete="off" />
+            </div>
+            <div class="hint">Digite <b>10000</b> e ao sair do campo vira <b>R$ 10.000,00</b>.</div>
           </div>
 
           <div>
-            <label for="index">Índice</label>
-            <select id="index" class="field">
-              <!-- Variações mensais (%) -->
-              <option value="189" data-type="pct">IGP-M (FGV) — SGS 189</option>
-              <option value="190" data-type="pct">IGP-DI (FGV) — SGS 190</option>
-              <option value="433" data-type="pct">IPCA (IBGE) — SGS 433</option>
-
-              <!-- Nível do índice (não é %) -->
-              <option value="11773" data-type="level">IPC-FIPE — SGS 11773</option>
-            </select>
-            <div class="hint" id="indexHint">Selecione o índice previsto no contrato.</div>
+            <label for="idx">Índice</label>
+            <div class="field">
+              <select id="idx">
+                <option value="189">IGP-M (FGV) — SGS 189</option>
+                <option value="190">IGP-DI (FGV) — SGS 190</option>
+                <option value="433">IPCA (IBGE) — SGS 433</option>
+                <option value="193">IPC-FIPE — SGS 193</option>
+              </select>
+            </div>
+            <div class="hint">Selecione o índice previsto no contrato.</div>
           </div>
 
           <div>
             <label for="start">Data de início do contrato</label>
-            <input id="start" class="field" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" />
-            <div class="hint">Máscara: <b>dd/mm/aaaa</b>. (O cálculo é por mês/ano.)</div>
+            <div class="field">
+              <input id="start" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" autocomplete="off" maxlength="10" />
+            </div>
+            <div class="hint">Máscara: <b>dd/mm/aaaa</b>. O cálculo considera o mês/ano.</div>
           </div>
 
           <div>
-            <label for="periodicity">Periodicidade do reajuste</label>
-            <select id="periodicity" class="field">
-              <option value="12">Anual</option>
-              <option value="1">Mensal</option>
-            </select>
+            <label for="freq">Periodicidade do reajuste</label>
+            <div class="field">
+              <select id="freq">
+                <option value="monthly">Mensal</option>
+                <option value="annual" selected>Anual</option>
+              </select>
+            </div>
             <div class="hint">Considera do mês inicial até o mês anterior ao reajuste.</div>
           </div>
         </div>
 
         <div class="row">
-          <label class="switch" title="Se marcado, não permite fator menor que 1 (não reduz o valor).">
-            <input id="lockDeflation" type="checkbox" />
-            <span>Travar deflação (não reduzir)</span>
+          <label class="check" for="lock">
+            <input id="lock" type="checkbox" />
+            Travar deflação (não reduzir)
           </label>
 
           <button id="btn" class="btn">Calcular</button>
         </div>
 
-        <div id="msg" class="alert"></div>
-
-        <div class="hint" style="margin-top:10px;">
-          Regra aplicada: acumula as variações mensais (quando disponível) ou usa relação de níveis (IPC-FIPE).
-        </div>
+        <div id="status" class="status">Preencha os campos e clique em <b>Calcular</b>.</div>
 
         <details style="margin-top:12px;">
           <summary>Diagnóstico (para conferir se está lendo o BCB)</summary>
-          <pre id="dbg" class="mono">—</pre>
+          <pre id="diag">—</pre>
         </details>
       </div>
-    </div>
+    </section>
 
-    <div class="card">
-      <div class="header">
-        <h2 class="title" style="font-size:18px;margin:0;">Resultado</h2>
-        <p class="subtitle">Variação acumulada, fator e novo aluguel.</p>
+    <!-- DIREITA -->
+    <aside class="panel">
+      <div class="resHead">
+        <h2 class="resTitle">Resultado</h2>
+        <div class="resSub">Variação acumulada, fator e novo aluguel.</div>
       </div>
 
-      <div class="side">
-        <div class="panel">
-          <div class="k">
-            <p class="h">Data do reajuste</p>
-            <p class="v" id="adjDate">—</p>
-          </div>
-          <div class="k">
-            <p class="h">Variação acumulada no período</p>
-            <p class="v" id="acc">—</p>
-          </div>
-          <div class="k">
-            <p class="h">Fator aplicado</p>
-            <p class="v" id="factor">—</p>
-          </div>
-          <div class="k">
-            <p class="h">Novo aluguel</p>
-            <p class="v" id="newRent">—</p>
-          </div>
-
-          <div class="note" id="detail">Preencha os campos e clique em <b>Calcular</b>.</div>
-
-          <details id="details" style="display:none;">
-            <summary id="listTitle">Ver meses e variações utilizadas</summary>
-            <pre id="list"></pre>
-          </details>
-
-          <div class="note">Fonte: API SGS/BCB.</div>
+      <div class="cards">
+        <div class="kpi">
+          <p class="k">Data do reajuste</p>
+          <p class="v" id="outDate">—</p>
         </div>
+
+        <div class="kpi">
+          <p class="k">Variação acumulada no período</p>
+          <p class="v" id="outVar">—</p>
+        </div>
+
+        <div class="kpi">
+          <p class="k">Fator aplicado</p>
+          <p class="v" id="outFactor">—</p>
+        </div>
+
+        <div class="kpi">
+          <p class="k">Novo aluguel</p>
+          <p class="v" id="outRent">—</p>
+        </div>
+
+        <details>
+          <summary>Ver meses e variações utilizadas</summary>
+          <pre id="outList">—</pre>
+        </details>
+
+        <div class="hint" style="padding:0 2px;">Fonte: API SGS/BCB.</div>
       </div>
-    </div>
+    </aside>
+
   </div>
 
-<script>
-  // ================== Formatadores ==================
-  const BRL = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
-  const PCT = new Intl.NumberFormat('pt-BR', { style:'percent', minimumFractionDigits:2, maximumFractionDigits:2 });
+  <script>
+    // ========= Helpers (formatação / parsing) =========
+    const nfBRL = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
+    const nfPct = new Intl.NumberFormat('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
 
-  function parseMoneySmart(v){
-    if(!v) return NaN;
-    v = String(v).trim().replace(/\s/g,'');
-    v = v.replace(/^R\$\s?/i,'');
-    if (v.includes(',')) v = v.replace(/\./g,'').replace(',', '.'); // pt-BR
-    v = v.replace(/[^0-9.-]/g,'');
-    const n = Number(v);
-    return Number.isFinite(n) ? n : NaN;
-  }
-
-  // ================== UI helpers ==================
-  function setMsg(type, text){
-    const el = document.getElementById('msg');
-    el.className = 'alert ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : '');
-    el.textContent = text;
-    el.style.display = 'block';
-  }
-  function clearMsg(){
-    const el = document.getElementById('msg');
-    el.style.display = 'none';
-    el.textContent = '';
-    el.className = 'alert';
-  }
-  function setDbg(text){
-    document.getElementById('dbg').textContent = text || '—';
-  }
-
-  // ================== Máscara data dd/mm/aaaa ==================
-  const startEl = document.getElementById('start');
-  startEl.addEventListener('input', () => {
-    let v = startEl.value.replace(/\D/g,'').slice(0,8);
-    if(v.length >= 5) startEl.value = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
-    else if(v.length >= 3) startEl.value = v.slice(0,2) + '/' + v.slice(2);
-    else startEl.value = v;
-  });
-
-  function parseBRDate(ddmmyyyy){
-    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(ddmmyyyy);
-    if(!m) return null;
-    const d = Number(m[1]), mo = Number(m[2]), y = Number(m[3]);
-    const dt = new Date(y, mo-1, d);
-    if(dt.getFullYear() !== y || dt.getMonth() !== (mo-1) || dt.getDate() !== d) return null;
-    return dt;
-  }
-  function fmtBRDate(dt){
-    const z = n => String(n).padStart(2,'0');
-    return `${z(dt.getDate())}/${z(dt.getMonth()+1)}/${dt.getFullYear()}`;
-  }
-  function monthStart(dt){ return new Date(dt.getFullYear(), dt.getMonth(), 1); }
-  function addMonths(dt, months){ return new Date(dt.getFullYear(), dt.getMonth()+months, dt.getDate()); }
-  function monthLabel(dt){
-    return dt.toLocaleDateString('pt-BR', { month:'long', year:'numeric' });
-  }
-
-  // ================== Moeda (UX) ==================
-  const rentEl = document.getElementById('rent');
-  rentEl.addEventListener('blur', () => {
-    const n = parseMoneySmart(rentEl.value);
-    if(Number.isFinite(n)) rentEl.value = BRL.format(n);
-  });
-  rentEl.addEventListener('focus', () => {
-    // deixa mais fácil editar
-    rentEl.value = rentEl.value.replace(/[R$\s]/g,'').trim();
-  });
-
-  // ================== BCB / SGS ==================
-  function toBCBDate(dt){
-    const z = n => String(n).padStart(2,'0');
-    return `${z(dt.getDate())}/${z(dt.getMonth()+1)}/${dt.getFullYear()}`;
-  }
-  async function fetchSeries(code, dStart, dEnd){
-    const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados?formato=json&dataInicial=${encodeURIComponent(toBCBDate(dStart))}&dataFinal=${encodeURIComponent(toBCBDate(dEnd))}`;
-    const res = await fetch(url, { cache:"no-store" });
-    if(!res.ok) throw new Error(`Falha ao buscar dados no BCB (HTTP ${res.status}).`);
-    const data = await res.json();
-    if(!Array.isArray(data) || data.length === 0) throw new Error('Sem dados retornados para o período informado.');
-    return { url, data };
-  }
-
-  // parse robusto (pt-BR com vírgula OU ponto)
-  function parseBCBNumber(v){
-    const raw = String(v).trim();
-    if (raw.includes(',')) {
-      const s = raw.replace(/\./g,'').replace(',', '.'); // remove milhares, vírgula vira decimal
+    function parseBRL(str){
+      if(!str) return NaN;
+      // aceita "10000", "10.000,00", "R$ 10.000,00"
+      const s = String(str).replace(/[R$\s]/g,'').replace(/\./g,'').replace(',', '.');
       const n = Number(s);
-      if (!Number.isFinite(n)) throw new Error(`Valor inválido retornado pela API: "${v}"`);
-      return n;
-    }
-    const n = Number(raw);
-    if (!Number.isFinite(n)) throw new Error(`Valor inválido retornado pela API: "${v}"`);
-    return n;
-  }
-
-  // ================== Tipo do índice (pct vs level) ==================
-  const indexEl = document.getElementById('index');
-  const indexHintEl = document.getElementById('indexHint');
-  const listTitleEl = document.getElementById('listTitle');
-
-  function currentIndexType(){
-    return indexEl.selectedOptions[0]?.dataset?.type || 'pct';
-  }
-  function refreshHints(){
-    if (currentIndexType() === 'level'){
-      indexHintEl.textContent = 'IPC-FIPE é um índice em nível (não é %). O fator é calculado por (último/primeiro).';
-      listTitleEl.textContent = 'Ver meses e níveis do índice utilizados';
-    } else {
-      indexHintEl.textContent = 'Selecione o índice previsto no contrato.';
-      listTitleEl.textContent = 'Ver meses e variações utilizadas';
-    }
-  }
-  indexEl.addEventListener('change', refreshHints);
-  refreshHints();
-
-  // ================== Cálculo ==================
-  async function calculate(){
-    clearMsg();
-
-    const rent = parseMoneySmart(rentEl.value);
-    if(!Number.isFinite(rent) || rent <= 0){
-      setMsg('err', 'Informe um valor de aluguel válido.');
-      return;
+      return Number.isFinite(n) ? n : NaN;
     }
 
-    const startDate = parseBRDate(startEl.value);
-    if(!startDate){
-      setMsg('err', 'Informe a data de início no formato dd/mm/aaaa.');
-      return;
+    function formatBRL(n){
+      return nfBRL.format(n);
     }
 
-    const months = Number(document.getElementById('periodicity').value); // 1 ou 12
-    const lock = document.getElementById('lockDeflation').checked;
-    const code = String(indexEl.value);
-    const idxText = indexEl.selectedOptions[0].textContent;
-    const type = currentIndexType();
-
-    const adjustmentDate = addMonths(startDate, months);
-
-    // mês inicial até mês anterior ao reajuste
-    const startMonth = monthStart(startDate);
-    const endMonthStart = monthStart(addMonths(adjustmentDate, -1));
-    const endMonthLastDay = new Date(endMonthStart.getFullYear(), endMonthStart.getMonth()+1, 0);
-
-    const diffMonths = (endMonthStart.getFullYear()-startMonth.getFullYear())*12 + (endMonthStart.getMonth()-startMonth.getMonth()) + 1;
-    if(diffMonths > 120){
-      setMsg('err', 'Período muito longo. Limite a no máximo 10 anos.');
-      return;
-    }
-    if(diffMonths <= 0){
-      setMsg('err', 'Período inválido. Verifique a data e a periodicidade.');
-      return;
+    function maskDateInput(el){
+      el.addEventListener('input', () => {
+        let v = el.value.replace(/\D/g,'').slice(0,8);
+        if(v.length >= 5) el.value = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
+        else if(v.length >= 3) el.value = v.slice(0,2) + '/' + v.slice(2);
+        else el.value = v;
+      });
     }
 
-    const btn = document.getElementById('btn');
-    btn.disabled = true;
-    btn.textContent = 'Calculando...';
+    function parseDateBR(str){
+      // dd/mm/aaaa
+      const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(str || '');
+      if(!m) return null;
+      const dd = Number(m[1]), mm = Number(m[2]), yyyy = Number(m[3]);
+      if(mm < 1 || mm > 12) return null;
+      if(dd < 1 || dd > 31) return null;
+      const d = new Date(yyyy, mm-1, dd);
+      // valida consistência
+      if(d.getFullYear() !== yyyy || d.getMonth() !== (mm-1) || d.getDate() !== dd) return null;
+      return d;
+    }
 
-    try{
-      const { url, data } = await fetchSeries(code, startMonth, endMonthLastDay);
+    function formatDateBR(d){
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
 
+    function firstOfMonth(d){
+      return new Date(d.getFullYear(), d.getMonth(), 1);
+    }
+
+    function addMonths(d, months){
+      return new Date(d.getFullYear(), d.getMonth() + months, d.getDate());
+    }
+
+    function addYears(d, years){
+      return new Date(d.getFullYear() + years, d.getMonth(), d.getDate());
+    }
+
+    function ddmmyyyy(d){
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const yyyy = d.getFullYear();
+      return `${dd}/${mm}/${yyyy}`;
+    }
+
+    // ========= Config de séries =========
+    // IMPORTANTÍSSIMO: IPC-FIPE mensal é SGS 193. :contentReference[oaicite:2]{index=2}
+    // Todas aqui são variações percentuais mensais -> acumula por produto.
+    const SERIES = {
+      189: { name: 'IGP-M (FGV)', kind: 'pct' },
+      190: { name: 'IGP-DI (FGV)', kind: 'pct' },
+      433: { name: 'IPCA (IBGE)', kind: 'pct' },
+      193: { name: 'IPC-FIPE', kind: 'pct' },
+    };
+
+    async function fetchSGS(seriesCode, startDate, endDate){
+      // API SGS/BCB :contentReference[oaicite:3]{index=3}
+      const url = new URL(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${seriesCode}/dados`);
+      url.searchParams.set('formato','json');
+      url.searchParams.set('dataInicial', ddmmyyyy(startDate));
+      url.searchParams.set('dataFinal', ddmmyyyy(endDate));
+
+      const res = await fetch(url.toString(), { headers: { 'Accept':'application/json' } });
+      if(!res.ok){
+        const txt = await res.text().catch(()=> '');
+        throw new Error(`Falha ao consultar BCB (HTTP ${res.status}). ${txt ? 'Detalhe: '+txt.slice(0,140) : ''}`);
+      }
+      const data = await res.json();
+      if(!Array.isArray(data)) throw new Error('Resposta inesperada do BCB (não veio lista).');
+      return { url: url.toString(), data };
+    }
+
+    function computeAccumFromPct(list){
+      // list: [{data:"01/12/2024", valor:"0.34"}, ...]
+      // fator = Π(1 + v/100)
       let factor = 1;
       const lines = [];
-
-      if (type === 'level') {
-        // ✅ IPC-FIPE: série em NÍVEL (ex.: 704,5341). Não acumula % mensal.
-        const first = parseBCBNumber(data[0].valor);
-        const last  = parseBCBNumber(data[data.length - 1].valor);
-        if (first <= 0 || last <= 0) throw new Error('IPC-FIPE retornou valores inválidos (<=0).');
-
-        factor = last / first;
-
-        for (const item of data) {
-          const level = parseBCBNumber(item.valor);
-          const lvlFmt = level.toLocaleString('pt-BR', {minimumFractionDigits:4, maximumFractionDigits:4});
-          lines.push(`${item.data}: ${lvlFmt} (nível)`);
-        }
-
-        setDbg(
-          `URL consultada:\n${url}\n\n` +
-          `Tipo: NÍVEL (IPC-FIPE)\n` +
-          `Primeiro: ${data[0].data} => "${data[0].valor}"\n` +
-          `Último:   ${data[data.length-1].data} => "${data[data.length-1].valor}"\n` +
-          `Fator (último/primeiro): ${factor}\n\n` +
-          `Total de pontos: ${data.length}`
-        );
-      } else {
-        // ✅ variações mensais em %: acumulador multiplicativo
-        factor = 1;
-        for (const item of data) {
-          const pct = parseBCBNumber(item.valor); // % ao mês
-          factor *= (1 + (pct / 100));
-
-          const pctFmt = pct.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
-          lines.push(`${item.data}: ${pctFmt}%`);
-        }
-
-        const head = data.slice(0, 3).map(x => `${x.data} => valor cru: "${x.valor}"`).join('\n');
-        setDbg(`URL consultada:\n${url}\n\nAmostra (cru):\n${head}\n\nTotal de pontos: ${data.length}`);
+      for(const row of list){
+        const v = Number(String(row.valor).replace(',','.'));
+        if(!Number.isFinite(v)) continue;
+        factor *= (1 + v/100);
+        lines.push(`${row.data}: ${nfPct.format(v)}%`);
       }
-
-      // trava deflação
-      let applied = factor;
-      if(lock && applied < 1) applied = 1;
-
-      const newRent = rent * applied;
-      const acc = applied - 1;
-
-      document.getElementById('adjDate').textContent = fmtBRDate(adjustmentDate);
-      document.getElementById('acc').textContent = PCT.format(acc);
-      document.getElementById('factor').textContent = applied.toLocaleString('pt-BR', {minimumFractionDigits:6, maximumFractionDigits:6});
-      document.getElementById('newRent').textContent = BRL.format(newRent);
-
-      document.getElementById('detail').innerHTML =
-        `<b>${idxText}</b><br>` +
-        `Período considerado: <b>${monthLabel(startMonth)}</b> até <b>${monthLabel(endMonthStart)}</b><br>` +
-        `Meses considerados: <b>${data.length}</b><br>` +
-        (lock ? `Deflação: <b>travada</b>` : `Deflação: <b>permitida</b>`);
-
-      document.getElementById('details').style.display = 'block';
-      document.getElementById('list').textContent = lines.join('\n');
-
-      setMsg('ok', 'Cálculo concluído com sucesso.');
-    } catch(e){
-      console.error(e);
-      setDbg(String(e?.message || e));
-      setMsg('err', e?.message || 'Erro ao calcular. Tente novamente.');
-    } finally{
-      btn.disabled = false;
-      btn.textContent = 'Calcular';
+      return { factor, lines };
     }
-  }
 
-  document.getElementById('btn').addEventListener('click', calculate);
+    // ========= UI =========
+    const rentEl = document.getElementById('rent');
+    const idxEl  = document.getElementById('idx');
+    const startEl= document.getElementById('start');
+    const freqEl = document.getElementById('freq');
+    const lockEl = document.getElementById('lock');
+    const btnEl  = document.getElementById('btn');
+    const statusEl = document.getElementById('status');
+    const diagEl = document.getElementById('diag');
 
-  // Preset para testar rápido
-  (function preset(){
-    rentEl.value = BRL.format(10000);
-    startEl.value = '01/12/2024';
-    indexEl.value = '190';
-    document.getElementById('periodicity').value = '12';
-    setDbg('—');
-    refreshHints();
-  })();
-</script>
+    const outDate = document.getElementById('outDate');
+    const outVar = document.getElementById('outVar');
+    const outFactor = document.getElementById('outFactor');
+    const outRent = document.getElementById('outRent');
+    const outList = document.getElementById('outList');
+
+    // máscara de data
+    maskDateInput(startEl);
+
+    // máscara de moeda: formata ao sair do campo
+    rentEl.addEventListener('blur', () => {
+      const n = parseBRL(rentEl.value);
+      if(Number.isFinite(n)) rentEl.value = formatBRL(n);
+    });
+
+    function setStatus(msg, kind){
+      statusEl.classList.remove('ok','err');
+      if(kind) statusEl.classList.add(kind);
+      statusEl.innerHTML = msg;
+    }
+
+    btnEl.addEventListener('click', async () => {
+      try{
+        btnEl.disabled = true;
+        setStatus('Calculando... consultando o BCB.', null);
+
+        const rent = parseBRL(rentEl.value);
+        if(!Number.isFinite(rent) || rent <= 0) throw new Error('Informe um valor de aluguel válido.');
+
+        const start = parseDateBR(startEl.value);
+        if(!start) throw new Error('Informe a data de início no formato dd/mm/aaaa.');
+
+        const code = Number(idxEl.value);
+        const cfg = SERIES[code];
+        if(!cfg) throw new Error('Índice inválido.');
+
+        const freq = freqEl.value; // monthly | annual
+        const reajusteDate = (freq === 'monthly') ? addMonths(start, 1) : addYears(start, 1);
+
+        // Regra: do mês inicial até o mês anterior ao reajuste.
+        // Ex: início 01/12/2024 + anual -> reajuste 01/12/2025 -> considera 12/2024 ... 11/2025
+        const startMonth = firstOfMonth(start);
+        const endMonth = firstOfMonth(addMonths(reajusteDate, -1));
+
+        // Proteção: BCB limita consultas longas (~10 anos). :contentReference[oaicite:4]{index=4}
+        const monthsSpan = (endMonth.getFullYear()-startMonth.getFullYear())*12 + (endMonth.getMonth()-startMonth.getMonth()) + 1;
+        if(monthsSpan <= 0) throw new Error('O período calculado ficou inválido. Verifique a data de início.');
+        if(monthsSpan > 120) throw new Error('Por segurança, este site limita o período a 10 anos (120 meses).');
+
+        const { url, data } = await fetchSGS(code, startMonth, endMonth);
+        if(!data.length) throw new Error('O BCB não retornou dados para este período/índice.');
+
+        // todas as séries aqui são percentuais mensais
+        const { factor: rawFactor, lines } = computeAccumFromPct(data);
+
+        let factor = rawFactor;
+        const locked = lockEl.checked;
+        if(locked && factor < 1) factor = 1;
+
+        const variation = (factor - 1) * 100;
+        const newRent = rent * factor;
+
+        // outputs
+        outDate.textContent = formatDateBR(reajusteDate);
+        outVar.textContent = `${nfPct.format(variation)}%`;
+        outFactor.textContent = factor.toLocaleString('pt-BR', { minimumFractionDigits:6, maximumFractionDigits:6 });
+        outRent.textContent = formatBRL(newRent);
+
+        outList.textContent = lines.join('\n') || '—';
+
+        diagEl.textContent =
+          `URL consultada:\n${url}\n\n` +
+          `Índice: ${cfg.name} (SGS ${code})\n` +
+          `Periodicidade: ${freq === 'annual' ? 'Anual' : 'Mensal'}\n` +
+          `Período considerado: ${ddmmyyyy(startMonth)} até ${ddmmyyyy(endMonth)}\n` +
+          `Meses: ${monthsSpan}\n` +
+          `Travar deflação: ${locked ? 'SIM' : 'NÃO'}\n` +
+          `Fator bruto (sem trava): ${rawFactor}\n` +
+          `Fator aplicado: ${factor}\n`;
+
+        setStatus('Cálculo concluído com sucesso.', 'ok');
+
+      }catch(err){
+        console.error(err);
+        setStatus(`Erro: ${err.message}`, 'err');
+        outDate.textContent = '—';
+        outVar.textContent = '—';
+        outFactor.textContent = '—';
+        outRent.textContent = '—';
+        outList.textContent = '—';
+        diagEl.textContent = '—';
+      }finally{
+        btnEl.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
