@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Shopping Center — Guia e Ferramentas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shopping Center — Conteúdo e Ferramentas</title>
   <link rel="stylesheet" href="/assets/styles.css" />
 </head>
 <body>
@@ -23,55 +23,59 @@
   </header>
 
   <main class="container">
-    <section class="hero">
+    <section class="heroCard">
       <h1>Guia prático de Shopping Center</h1>
       <p>
-        Um site educativo com conteúdo direto ao ponto e ferramentas úteis para o dia a dia:
-        reajustes, conceitos de contrato, indicadores e boas práticas de gestão.
+        Um site educativo com conteúdo direto ao ponto e ferramentas úteis para o dia a dia: reajustes,
+        conceitos de contrato, condomínio, fundo de promoção (FPP) e boas práticas de gestão.
       </p>
-
-      <div class="grid">
-        <a class="card" href="/dicas/">
-          <h3>Dicas e conteúdo</h3>
-          <p>Artigos e tópicos sobre aluguel, condomínio, fundo de promoção e rotinas.</p>
-          <span class="cta">Ver Dicas →</span>
-        </a>
-
-        <a class="card" href="/ferramentas/">
-          <h3>Ferramentas</h3>
-          <p>Utilitários rápidos para cálculos e validações (ex.: reajuste de aluguel).</p>
-          <span class="cta">Ver Ferramentas →</span>
-        </a>
-
-        <a class="card" href="/planilhas/">
-          <h3>Planilhas</h3>
-          <p>Modelos prontos para download. Em breve, biblioteca completa.</p>
-          <span class="cta">Ver Planilhas →</span>
-        </a>
-      </div>
     </section>
 
-    <h2 class="sectionTitle">Comece por aqui</h2>
-    <div class="list">
-      <a class="item" href="/ferramentas/reajuste/">
-        <div>
-          <b>Calculadora de Reajuste</b>
-          <span>Busca índices oficiais no BCB e calcula reajuste (com trava de deflação).</span>
+    <section class="grid2">
+      <div class="panel">
+        <div class="panelHead">
+          <h2>Dicas</h2>
+          <p>Artigos e tópicos sobre aluguel, condomínio e fundo de promoção.</p>
         </div>
-        <span class="pill2">Ferramenta</span>
-      </a>
-      <a class="item" href="/dicas/">
-        <div>
-          <b>Entendendo aluguel, condomínio e FPP</b>
-          <span>Conteúdo didático, sem juridiquês.</span>
+        <div class="panelBody">
+          <a class="link" href="/dicas/">Ver conteúdos →</a>
         </div>
-        <span class="pill2">Dicas</span>
-      </a>
-    </div>
+      </div>
 
-    <footer class="footer">
-      Projeto pessoal e educativo. Índices e dados: SGS/BCB.
-    </footer>
+      <div class="panel">
+        <div class="panelHead">
+          <h2>Ferramentas</h2>
+          <p>Utilitários rápidos para cálculos e validações (ex.: reajuste de aluguel).</p>
+        </div>
+        <div class="panelBody">
+          <a class="link" href="/ferramentas/">Ver ferramentas →</a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panelHead">
+          <h2>Planilhas</h2>
+          <p>Modelos prontos para download. (Em breve, biblioteca completa.)</p>
+        </div>
+        <div class="panelBody">
+          <a class="link" href="/planilhas/">Ver planilhas →</a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panelHead">
+          <h2>Comece por aqui</h2>
+          <p>Atalhos para as partes mais usadas.</p>
+        </div>
+        <div class="panelBody">
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <a class="link" href="/ferramentas/reajuste/">Calculadora de Reajuste →</a>
+            <a class="link" href="/dicas/">Entendendo aluguel, condomínio e FPP →</a>
+          </div>
+          <div class="footerNote">Projeto pessoal e educativo. Índices e dados: SGS/BCB.</div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="/assets/site.js"></script>
