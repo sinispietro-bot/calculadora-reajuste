@@ -197,6 +197,9 @@
       font-size:12px;
       line-height:1.45;
     }
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
   </style>
 </head>
 
@@ -225,10 +228,10 @@
           <div>
             <label for="index">Índice</label>
             <select id="index" class="field">
-              <option value="189">IGP-M (FGV)</option>
-              <option value="190">IGP-DI (FGV)</option>
-              <option value="433">IPCA (IBGE)</option>
-              <option value="11773">IPC-FIPE</option>
+              <option value="189">IGP-M (FGV) — SGS 189</option>
+              <option value="190">IGP-DI (FGV) — SGS 190</option>
+              <option value="433">IPCA (IBGE) — SGS 433</option>
+              <option value="11773">IPC-FIPE — SGS 11773</option>
             </select>
             <div class="hint">Selecione o índice previsto no contrato.</div>
           </div>
@@ -236,7 +239,7 @@
           <div>
             <label for="start">Data de início do contrato</label>
             <input id="start" class="field" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10" />
-            <div class="hint">Máscara: <b>dd/mm/aaaa</b>.</div>
+            <div class="hint">Máscara: <b>dd/mm/aaaa</b>. (O cálculo é por mês/ano.)</div>
           </div>
 
           <div>
@@ -245,7 +248,7 @@
               <option value="12">Anual</option>
               <option value="1">Mensal</option>
             </select>
-            <div class="hint">O cálculo usa do mês inicial até o mês anterior ao reajuste.</div>
+            <div class="hint">Considera do mês inicial até o mês anterior ao reajuste.</div>
           </div>
         </div>
 
@@ -261,8 +264,13 @@
         <div id="msg" class="alert"></div>
 
         <div class="hint" style="margin-top:10px;">
-          Nota: se o contrato diz “mês anterior ao reajuste”, o sistema já respeita essa regra automaticamente (ex.: início em Dez/24, reajuste anual em Dez/25 → considera Dez/24 a Nov/25).
+          Regra aplicada: acumula as variações mensais do índice no período e aplica no aluguel.
         </div>
+
+        <details style="margin-top:12px;">
+          <summary>Diagnóstico (para conferir se está lendo o BCB)</summary>
+          <pre id="dbg" class="mono">—</pre>
+        </details>
       </div>
     </div>
 
@@ -311,29 +319,28 @@
 
   function parseMoneySmart(v){
     if(!v) return NaN;
-    v = String(v).trim();
-
-    // Se tiver vírgula/ponto como decimal, respeita.
-    // Remove separador de milhar e normaliza decimal.
-    v = v.replace(/\s/g,'');
-    // remove pontos de milhar (10.000,00)
-    v = v.replace(/\.(?=\d{3}(\D|$))/g, '');
-    // troca vírgula por ponto
-    v = v.replace(',', '.');
-    // remove tudo que não é número/ponto/sinal
+    v = String(v).trim().replace(/\s/g,'');
+    // remove "R$"
+    v = v.replace(/^R\$\s?/i,'');
+    // se tiver vírgula, assume pt-BR: 10.000,00
+    if (v.includes(',')) {
+      v = v.replace(/\./g,'').replace(',', '.');
+    } else {
+      // se não tiver vírgula, pode ser 10000 ou 10000.50
+      // mantém ponto decimal se existir
+      v = v;
+    }
     v = v.replace(/[^0-9.-]/g,'');
     const n = Number(v);
     return Number.isFinite(n) ? n : NaN;
   }
 
-  // máscara moeda: deixa digitar livre, e formata ao sair do campo
   const rentEl = document.getElementById('rent');
   rentEl.addEventListener('blur', () => {
     const n = parseMoneySmart(rentEl.value);
     if(Number.isFinite(n)) rentEl.value = BRL.format(n);
   });
   rentEl.addEventListener('focus', () => {
-    // ao focar, remove "R$" e separadores pra facilitar editar
     rentEl.value = rentEl.value.replace(/[R$\s]/g,'').trim();
   });
 
@@ -351,7 +358,6 @@
     if(!m) return null;
     const d = Number(m[1]), mo = Number(m[2]), y = Number(m[3]);
     const dt = new Date(y, mo-1, d);
-    // valida
     if(dt.getFullYear() !== y || dt.getMonth() !== (mo-1) || dt.getDate() !== d) return null;
     return dt;
   }
@@ -369,9 +375,6 @@
   }
 
   // ================== BCB / SGS ==================
-  // Endpoint:
-  // https://api.bcb.gov.br/dados/serie/bcdata.sgs.{codigo}/dados?formato=json&dataInicial=DD/MM/YYYY&dataFinal=DD/MM/YYYY
-
   function toBCBDate(dt){
     const z = n => String(n).padStart(2,'0');
     return `${z(dt.getDate())}/${z(dt.getMonth()+1)}/${dt.getFullYear()}`;
@@ -380,18 +383,29 @@
   async function fetchSeries(code, dStart, dEnd){
     const url = `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${code}/dados?formato=json&dataInicial=${encodeURIComponent(toBCBDate(dStart))}&dataFinal=${encodeURIComponent(toBCBDate(dEnd))}`;
     const res = await fetch(url, { cache:"no-store" });
-    if(!res.ok) throw new Error(`Falha ao buscar dados (HTTP ${res.status}).`);
+    if(!res.ok) throw new Error(`Falha ao buscar dados no BCB (HTTP ${res.status}).`);
     const data = await res.json();
     if(!Array.isArray(data) || data.length === 0) throw new Error('Sem dados retornados para o período informado.');
-    return data;
+    return { url, data };
   }
 
+  // ✅ Parsing robusto: aceita "0,87" e "0.87" e negativos
   function parseBCBPercent(v){
-  const s = String(v).trim().replace(/\./g,'').replace(',', '.'); // tira milhares, mantém decimal
-  const n = Number(s);
-  if (!Number.isFinite(n)) throw new Error(`Valor inválido retornado pela API: "${v}"`);
-  return n; // já está em % ao mês
-}
+    const raw = String(v).trim();
+
+    // pt-BR: "0,87"
+    if (raw.includes(',')) {
+      const s = raw.replace(/\./g,'').replace(',', '.'); // remove milhares, vírgula vira decimal
+      const n = Number(s);
+      if (!Number.isFinite(n)) throw new Error(`Valor inválido retornado pela API: "${v}"`);
+      return n;
+    }
+
+    // en: "0.87"
+    const n = Number(raw);
+    if (!Number.isFinite(n)) throw new Error(`Valor inválido retornado pela API: "${v}"`);
+    return n;
+  }
 
   // ================== UI helpers ==================
   function setMsg(type, text){
@@ -408,10 +422,11 @@
     el.className = 'alert';
   }
 
-  // ================== Cálculo correto (igual lógica do concorrente) ==================
-  // Regra: usa as variações mensais do índice do mês inicial ATÉ o mês anterior ao reajuste.
-  // Ex.: início 01/12/2024 com periodicidade anual => reajuste 01/12/2025
-  //      considera Dez/2024 ... Nov/2025 (12 meses).
+  function setDbg(text){
+    document.getElementById('dbg').textContent = text;
+  }
+
+  // ================== Cálculo ==================
   async function calculate(){
     clearMsg();
 
@@ -436,17 +451,20 @@
     const adjustmentDate = addMonths(startDate, months);
 
     // janela de cálculo:
-    // startMonth = mês da data inicial (primeiro dia)
-    // endMonth   = mês anterior ao reajuste (último dia do mês anterior)
+    // mês inicial (1º dia do mês)
+    // até o mês anterior ao reajuste (último dia do mês anterior)
     const startMonth = monthStart(startDate);
     const endMonthStart = monthStart(addMonths(adjustmentDate, -1));
     const endMonthLastDay = new Date(endMonthStart.getFullYear(), endMonthStart.getMonth()+1, 0);
 
-    // limita 10 anos (120 meses)
-    const maxMonths = 120;
+    // limite 10 anos (120 meses)
     const diffMonths = (endMonthStart.getFullYear()-startMonth.getFullYear())*12 + (endMonthStart.getMonth()-startMonth.getMonth()) + 1;
-    if(diffMonths > maxMonths){
+    if(diffMonths > 120){
       setMsg('err', 'Período muito longo. Limite a no máximo 10 anos.');
+      return;
+    }
+    if(diffMonths <= 0){
+      setMsg('err', 'Período inválido. Verifique a data e a periodicidade.');
       return;
     }
 
@@ -455,18 +473,21 @@
     btn.textContent = 'Calculando...';
 
     try{
-      const series = await fetchSeries(code, startMonth, endMonthLastDay);
+      const { url, data } = await fetchSeries(code, startMonth, endMonthLastDay);
 
       // fator acumulado = Π(1 + var_mensal/100)
       let factor = 1;
       const lines = [];
 
-      for(const item of series){
-        const pct = parseBCBPercent(item.valor);
+      for(const item of data){
+        const pct = parseBCBPercent(item.valor); // ✅ agora é 0,87 e não 87
         factor *= (1 + (pct/100));
-        lines.push(`${item.data}: ${pct.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2})}%`);
+
+        const pctFmt = pct.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+        lines.push(`${item.data}: ${pctFmt}%`);
       }
 
+      // trava deflação
       let applied = factor;
       if(lock && applied < 1) applied = 1;
 
@@ -481,16 +502,20 @@
       document.getElementById('detail').innerHTML =
         `<b>${idxText}</b><br>` +
         `Período considerado: <b>${monthLabel(startMonth)}</b> até <b>${monthLabel(endMonthStart)}</b><br>` +
-        `Meses considerados: <b>${series.length}</b><br>` +
+        `Meses considerados: <b>${data.length}</b><br>` +
         (lock ? `Deflação: <b>travada</b>` : `Deflação: <b>permitida</b>`);
 
-      // lista de variações (opcional)
       document.getElementById('details').style.display = 'block';
       document.getElementById('list').textContent = lines.join('\n');
+
+      // diagnóstico: mostra URL e primeiros valores crus (pra você conferir que vem 0,87 etc.)
+      const head = data.slice(0, 3).map(x => `${x.data} => valor cru: "${x.valor}"`).join('\n');
+      setDbg(`URL consultada:\n${url}\n\nAmostra (cru):\n${head}\n\nTotal de pontos: ${data.length}`);
 
       setMsg('ok', 'Cálculo concluído com sucesso.');
     }catch(e){
       console.error(e);
+      setDbg(String(e));
       setMsg('err', e.message || 'Erro ao calcular. Tente novamente.');
     }finally{
       btn.disabled = false;
@@ -500,12 +525,13 @@
 
   document.getElementById('btn').addEventListener('click', calculate);
 
-  // preenche um exemplo rápido coerente
+  // exemplo inicial
   (function preset(){
     rentEl.value = BRL.format(10000);
     startEl.value = '01/12/2024';
     document.getElementById('index').value = '190'; // IGP-DI
-    document.getElementById('periodicity').value = '12';
+    document.getElementById('periodicity').value = '12'; // anual
+    setDbg('—');
   })();
 </script>
 </body>
