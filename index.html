@@ -3,567 +3,77 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Calculadora de Reajuste de Aluguel</title>
-
-  <style>
-    :root{
-      --bg1:#070a12;
-      --bg2:#0b1020;
-      --card:#0f172a;
-      --card2:#0b1225;
-      --muted:#9aa4b2;
-      --text:#e6edf6;
-      --line:rgba(255,255,255,.08);
-      --accent:#4f8cff;
-      --accent2:#2dd4bf;
-      --danger:#ff6b6b;
-      --ok:#22c55e;
-      --shadow: 0 18px 60px rgba(0,0,0,.55);
-      --radius:18px;
-    }
-
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      color:var(--text);
-      background:
-        radial-gradient(1200px 700px at 15% 10%, rgba(79,140,255,.25), transparent 60%),
-        radial-gradient(900px 600px at 85% 20%, rgba(45,212,191,.18), transparent 55%),
-        radial-gradient(1200px 900px at 60% 120%, rgba(120,70,255,.14), transparent 60%),
-        linear-gradient(180deg, var(--bg1), var(--bg2));
-      min-height:100vh;
-      padding:34px 18px;
-    }
-
-    .wrap{
-      max-width:1100px;
-      margin:0 auto;
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap:18px;
-    }
-
-    @media (max-width: 980px){
-      .wrap{grid-template-columns:1fr}
-    }
-
-    .panel{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-
-    .panel .head{
-      padding:22px 22px 16px;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-    }
-
-    .title{
-      margin:0;
-      font-size:26px;
-      letter-spacing:.2px;
-    }
-
-    .pill{
-      font-size:12px;
-      color:var(--text);
-      border:1px solid var(--line);
-      padding:8px 10px;
-      border-radius:999px;
-      background:rgba(15,23,42,.55);
-      white-space:nowrap;
-    }
-
-    .sub{
-      margin:10px 0 0;
-      color:var(--muted);
-      font-size:14px;
-      line-height:1.35;
-      max-width:700px;
-    }
-
-    .body{ padding:18px 22px 22px; }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:14px;
-    }
-    @media (max-width: 720px){
-      .grid{grid-template-columns:1fr}
-    }
-
-    label{
-      display:block;
-      font-size:13px;
-      color: #cbd5e1;
-      margin:0 0 8px;
-    }
-
-    .field{
-      background: rgba(15,23,42,.7);
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-height:48px;
-    }
-
-    input, select{
-      width:100%;
-      background: transparent;
-      border:0;
-      outline:none;
-      color:var(--text);
-      font-size:15px;
-    }
-
-    input::placeholder{color:rgba(230,237,246,.35)}
-
-    .hint{
-      margin-top:6px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.25;
-    }
-
-    .row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-      margin-top:14px;
-      flex-wrap:wrap;
-    }
-
-    .check{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 12px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background: rgba(15,23,42,.35);
-    }
-    .check input{width:auto; transform:scale(1.05);}
-
-    .btn{
-      cursor:pointer;
-      border:0;
-      padding:12px 18px;
-      border-radius:14px;
-      font-weight:700;
-      font-size:15px;
-      color:#07101f;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      min-width:160px;
-    }
-    .btn:disabled{opacity:.55; cursor:not-allowed}
-
-    .status{
-      margin-top:14px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px 14px;
-      background: rgba(15,23,42,.35);
-      color: var(--muted);
-      font-size:13px;
-    }
-    .status.ok{color:#d1fae5; border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.08);}
-    .status.err{color:#ffe4e6; border-color: rgba(255,107,107,.38); background: rgba(255,107,107,.08);}
-
-    .resHead{
-      padding:22px 22px 16px;
-      border-bottom:1px solid var(--line);
-    }
-
-    .resTitle{
-      margin:0;
-      font-size:20px;
-    }
-
-    .resSub{ margin:6px 0 0; color:var(--muted); font-size:13px; }
-
-    .cards{ padding:16px 22px 22px; display:grid; gap:12px; }
-
-    .kpi{
-      border:1px solid var(--line);
-      background: rgba(15,23,42,.45);
-      border-radius:16px;
-      padding:14px 14px;
-    }
-    .kpi .k{ color:var(--muted); font-size:12px; margin:0 0 6px;}
-    .kpi .v{ margin:0; font-size:20px; font-weight:800; letter-spacing:.2px;}
-
-    details{
-      border:1px solid var(--line);
-      background: rgba(15,23,42,.35);
-      border-radius:16px;
-      padding:12px 14px;
-    }
-    summary{
-      cursor:pointer;
-      color:#cbd5e1;
-      font-weight:650;
-      font-size:13px;
-    }
-    pre{
-      margin:10px 0 0;
-      white-space:pre-wrap;
-      word-break:break-word;
-      font-size:12px;
-      color:#e2e8f0;
-      line-height:1.35;
-    }
-
-    /* Corrige dropdown no tema escuro (quando o browser respeita) */
-    select option{
-      background-color:#0b1225;
-      color:#e6edf6;
-    }
-    select optgroup{
-      background-color:#0b1225;
-      color:#cbd5e1;
-    }
-  </style>
+  <title>Shopping Center — Guia e Ferramentas</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
 </head>
-
 <body>
-  <div class="wrap">
-
-    <!-- ESQUERDA -->
-    <section class="panel">
-      <div class="head">
-        <div>
-          <h1 class="title">Calculadora de Reajuste de Aluguel</h1>
-          <p class="sub">
-            Você informa <b>aluguel</b>, <b>data de início</b>, <b>índice</b> e <b>periodicidade</b>.
-            O sistema busca as variações oficiais no <b>Banco Central (SGS/BCB)</b> e calcula o reajuste acumulado.
-          </p>
-        </div>
-        <div class="pill">Brasil · índices oficiais</div>
+  <header class="nav">
+    <div class="navInner">
+      <div class="brand">
+        <span>Shopping Center</span>
+        <span class="badge">conteúdo + ferramentas</span>
       </div>
+      <nav class="menu">
+        <a id="nav-home" href="/">Home</a>
+        <a id="nav-dicas" href="/dicas/">Dicas</a>
+        <a id="nav-ferramentas" href="/ferramentas/">Ferramentas</a>
+        <a id="nav-planilhas" href="/planilhas/">Planilhas</a>
+      </nav>
+    </div>
+  </header>
 
-      <div class="body">
-        <div class="grid">
-          <div>
-            <label for="rent">Valor do aluguel (R$)</label>
-            <div class="field">
-              <input id="rent" type="text" inputmode="numeric" placeholder="Ex.: 10000 ou 10.000,00" autocomplete="off" />
-            </div>
-            <div class="hint">Digite <b>10000</b> e ao sair do campo vira <b>R$ 10.000,00</b>.</div>
-          </div>
+  <main class="container">
+    <section class="hero">
+      <h1>Guia prático de Shopping Center</h1>
+      <p>
+        Um site educativo com conteúdo direto ao ponto e ferramentas úteis para o dia a dia:
+        reajustes, conceitos de contrato, indicadores e boas práticas de gestão.
+      </p>
 
-          <div>
-            <label for="idx">Índice</label>
-            <div class="field">
-              <select id="idx">
-                <option value="189">IGP-M (FGV) — SGS 189</option>
-                <option value="190">IGP-DI (FGV) — SGS 190</option>
-                <option value="433">IPCA (IBGE) — SGS 433</option>
-                <option value="193">IPC-FIPE — SGS 193</option>
-              </select>
-            </div>
-            <div class="hint">Selecione o índice previsto no contrato.</div>
-          </div>
+      <div class="grid">
+        <a class="card" href="/dicas/">
+          <h3>Dicas e conteúdo</h3>
+          <p>Artigos e tópicos sobre aluguel, condomínio, fundo de promoção e rotinas.</p>
+          <span class="cta">Ver Dicas →</span>
+        </a>
 
-          <div>
-            <label for="start">Data de início do contrato</label>
-            <div class="field">
-              <input id="start" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" autocomplete="off" maxlength="10" />
-            </div>
-            <div class="hint">Máscara: <b>dd/mm/aaaa</b>. O cálculo considera o mês/ano.</div>
-          </div>
+        <a class="card" href="/ferramentas/">
+          <h3>Ferramentas</h3>
+          <p>Utilitários rápidos para cálculos e validações (ex.: reajuste de aluguel).</p>
+          <span class="cta">Ver Ferramentas →</span>
+        </a>
 
-          <div>
-            <label for="freq">Periodicidade do reajuste</label>
-            <div class="field">
-              <select id="freq">
-                <option value="monthly">Mensal</option>
-                <option value="annual" selected>Anual</option>
-              </select>
-            </div>
-            <div class="hint">Considera do mês inicial até o mês anterior ao reajuste.</div>
-          </div>
-        </div>
-
-        <div class="row">
-          <label class="check" for="lock">
-            <input id="lock" type="checkbox" />
-            Travar deflação (não reduzir)
-          </label>
-
-          <button id="btn" class="btn">Calcular</button>
-        </div>
-
-        <div id="status" class="status">Preencha os campos e clique em <b>Calcular</b>.</div>
-
-        <details style="margin-top:12px;">
-          <summary>Diagnóstico (para conferir se está lendo o BCB)</summary>
-          <pre id="diag">—</pre>
-        </details>
+        <a class="card" href="/planilhas/">
+          <h3>Planilhas</h3>
+          <p>Modelos prontos para download. Em breve, biblioteca completa.</p>
+          <span class="cta">Ver Planilhas →</span>
+        </a>
       </div>
     </section>
 
-    <!-- DIREITA -->
-    <aside class="panel">
-      <div class="resHead">
-        <h2 class="resTitle">Resultado</h2>
-        <div class="resSub">Variação acumulada, fator e novo aluguel.</div>
-      </div>
-
-      <div class="cards">
-        <div class="kpi">
-          <p class="k">Data do reajuste</p>
-          <p class="v" id="outDate">—</p>
+    <h2 class="sectionTitle">Comece por aqui</h2>
+    <div class="list">
+      <a class="item" href="/ferramentas/reajuste/">
+        <div>
+          <b>Calculadora de Reajuste</b>
+          <span>Busca índices oficiais no BCB e calcula reajuste (com trava de deflação).</span>
         </div>
-
-        <div class="kpi">
-          <p class="k">Variação acumulada no período</p>
-          <p class="v" id="outVar">—</p>
+        <span class="pill2">Ferramenta</span>
+      </a>
+      <a class="item" href="/dicas/">
+        <div>
+          <b>Entendendo aluguel, condomínio e FPP</b>
+          <span>Conteúdo didático, sem juridiquês.</span>
         </div>
+        <span class="pill2">Dicas</span>
+      </a>
+    </div>
 
-        <div class="kpi">
-          <p class="k">Fator aplicado</p>
-          <p class="v" id="outFactor">—</p>
-        </div>
+    <footer class="footer">
+      Projeto pessoal e educativo. Índices e dados: SGS/BCB.
+    </footer>
+  </main>
 
-        <div class="kpi">
-          <p class="k">Novo aluguel</p>
-          <p class="v" id="outRent">—</p>
-        </div>
-
-        <details>
-          <summary>Ver meses e variações utilizadas</summary>
-          <pre id="outList">—</pre>
-        </details>
-
-        <div class="hint" style="padding:0 2px;">Fonte: API SGS/BCB.</div>
-      </div>
-    </aside>
-
-  </div>
-
-  <script>
-    // ========= Helpers (formatação / parsing) =========
-    const nfBRL = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
-    const nfPct = new Intl.NumberFormat('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
-
-    function parseBRL(str){
-      if(!str) return NaN;
-      // aceita "10000", "10.000,00", "R$ 10.000,00"
-      const s = String(str).replace(/[R$\s]/g,'').replace(/\./g,'').replace(',', '.');
-      const n = Number(s);
-      return Number.isFinite(n) ? n : NaN;
-    }
-
-    function formatBRL(n){
-      return nfBRL.format(n);
-    }
-
-    function maskDateInput(el){
-      el.addEventListener('input', () => {
-        let v = el.value.replace(/\D/g,'').slice(0,8);
-        if(v.length >= 5) el.value = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
-        else if(v.length >= 3) el.value = v.slice(0,2) + '/' + v.slice(2);
-        else el.value = v;
-      });
-    }
-
-    function parseDateBR(str){
-      // dd/mm/aaaa
-      const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(str || '');
-      if(!m) return null;
-      const dd = Number(m[1]), mm = Number(m[2]), yyyy = Number(m[3]);
-      if(mm < 1 || mm > 12) return null;
-      if(dd < 1 || dd > 31) return null;
-      const d = new Date(yyyy, mm-1, dd);
-      // valida consistência
-      if(d.getFullYear() !== yyyy || d.getMonth() !== (mm-1) || d.getDate() !== dd) return null;
-      return d;
-    }
-
-    function formatDateBR(d){
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      const yyyy = d.getFullYear();
-      return `${dd}/${mm}/${yyyy}`;
-    }
-
-    function firstOfMonth(d){
-      return new Date(d.getFullYear(), d.getMonth(), 1);
-    }
-
-    function addMonths(d, months){
-      return new Date(d.getFullYear(), d.getMonth() + months, d.getDate());
-    }
-
-    function addYears(d, years){
-      return new Date(d.getFullYear() + years, d.getMonth(), d.getDate());
-    }
-
-    function ddmmyyyy(d){
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      const yyyy = d.getFullYear();
-      return `${dd}/${mm}/${yyyy}`;
-    }
-
-    // ========= Config de séries =========
-    // IMPORTANTÍSSIMO: IPC-FIPE mensal é SGS 193. :contentReference[oaicite:2]{index=2}
-    // Todas aqui são variações percentuais mensais -> acumula por produto.
-    const SERIES = {
-      189: { name: 'IGP-M (FGV)', kind: 'pct' },
-      190: { name: 'IGP-DI (FGV)', kind: 'pct' },
-      433: { name: 'IPCA (IBGE)', kind: 'pct' },
-      193: { name: 'IPC-FIPE', kind: 'pct' },
-    };
-
-    async function fetchSGS(seriesCode, startDate, endDate){
-      // API SGS/BCB :contentReference[oaicite:3]{index=3}
-      const url = new URL(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${seriesCode}/dados`);
-      url.searchParams.set('formato','json');
-      url.searchParams.set('dataInicial', ddmmyyyy(startDate));
-      url.searchParams.set('dataFinal', ddmmyyyy(endDate));
-
-      const res = await fetch(url.toString(), { headers: { 'Accept':'application/json' } });
-      if(!res.ok){
-        const txt = await res.text().catch(()=> '');
-        throw new Error(`Falha ao consultar BCB (HTTP ${res.status}). ${txt ? 'Detalhe: '+txt.slice(0,140) : ''}`);
-      }
-      const data = await res.json();
-      if(!Array.isArray(data)) throw new Error('Resposta inesperada do BCB (não veio lista).');
-      return { url: url.toString(), data };
-    }
-
-    function computeAccumFromPct(list){
-      // list: [{data:"01/12/2024", valor:"0.34"}, ...]
-      // fator = Π(1 + v/100)
-      let factor = 1;
-      const lines = [];
-      for(const row of list){
-        const v = Number(String(row.valor).replace(',','.'));
-        if(!Number.isFinite(v)) continue;
-        factor *= (1 + v/100);
-        lines.push(`${row.data}: ${nfPct.format(v)}%`);
-      }
-      return { factor, lines };
-    }
-
-    // ========= UI =========
-    const rentEl = document.getElementById('rent');
-    const idxEl  = document.getElementById('idx');
-    const startEl= document.getElementById('start');
-    const freqEl = document.getElementById('freq');
-    const lockEl = document.getElementById('lock');
-    const btnEl  = document.getElementById('btn');
-    const statusEl = document.getElementById('status');
-    const diagEl = document.getElementById('diag');
-
-    const outDate = document.getElementById('outDate');
-    const outVar = document.getElementById('outVar');
-    const outFactor = document.getElementById('outFactor');
-    const outRent = document.getElementById('outRent');
-    const outList = document.getElementById('outList');
-
-    // máscara de data
-    maskDateInput(startEl);
-
-    // máscara de moeda: formata ao sair do campo
-    rentEl.addEventListener('blur', () => {
-      const n = parseBRL(rentEl.value);
-      if(Number.isFinite(n)) rentEl.value = formatBRL(n);
-    });
-
-    function setStatus(msg, kind){
-      statusEl.classList.remove('ok','err');
-      if(kind) statusEl.classList.add(kind);
-      statusEl.innerHTML = msg;
-    }
-
-    btnEl.addEventListener('click', async () => {
-      try{
-        btnEl.disabled = true;
-        setStatus('Calculando... consultando o BCB.', null);
-
-        const rent = parseBRL(rentEl.value);
-        if(!Number.isFinite(rent) || rent <= 0) throw new Error('Informe um valor de aluguel válido.');
-
-        const start = parseDateBR(startEl.value);
-        if(!start) throw new Error('Informe a data de início no formato dd/mm/aaaa.');
-
-        const code = Number(idxEl.value);
-        const cfg = SERIES[code];
-        if(!cfg) throw new Error('Índice inválido.');
-
-        const freq = freqEl.value; // monthly | annual
-        const reajusteDate = (freq === 'monthly') ? addMonths(start, 1) : addYears(start, 1);
-
-        // Regra: do mês inicial até o mês anterior ao reajuste.
-        // Ex: início 01/12/2024 + anual -> reajuste 01/12/2025 -> considera 12/2024 ... 11/2025
-        const startMonth = firstOfMonth(start);
-        const endMonth = firstOfMonth(addMonths(reajusteDate, -1));
-
-        // Proteção: BCB limita consultas longas (~10 anos). :contentReference[oaicite:4]{index=4}
-        const monthsSpan = (endMonth.getFullYear()-startMonth.getFullYear())*12 + (endMonth.getMonth()-startMonth.getMonth()) + 1;
-        if(monthsSpan <= 0) throw new Error('O período calculado ficou inválido. Verifique a data de início.');
-        if(monthsSpan > 120) throw new Error('Por segurança, este site limita o período a 10 anos (120 meses).');
-
-        const { url, data } = await fetchSGS(code, startMonth, endMonth);
-        if(!data.length) throw new Error('O BCB não retornou dados para este período/índice.');
-
-        // todas as séries aqui são percentuais mensais
-        const { factor: rawFactor, lines } = computeAccumFromPct(data);
-
-        let factor = rawFactor;
-        const locked = lockEl.checked;
-        if(locked && factor < 1) factor = 1;
-
-        const variation = (factor - 1) * 100;
-        const newRent = rent * factor;
-
-        // outputs
-        outDate.textContent = formatDateBR(reajusteDate);
-        outVar.textContent = `${nfPct.format(variation)}%`;
-        outFactor.textContent = factor.toLocaleString('pt-BR', { minimumFractionDigits:6, maximumFractionDigits:6 });
-        outRent.textContent = formatBRL(newRent);
-
-        outList.textContent = lines.join('\n') || '—';
-
-        diagEl.textContent =
-          `URL consultada:\n${url}\n\n` +
-          `Índice: ${cfg.name} (SGS ${code})\n` +
-          `Periodicidade: ${freq === 'annual' ? 'Anual' : 'Mensal'}\n` +
-          `Período considerado: ${ddmmyyyy(startMonth)} até ${ddmmyyyy(endMonth)}\n` +
-          `Meses: ${monthsSpan}\n` +
-          `Travar deflação: ${locked ? 'SIM' : 'NÃO'}\n` +
-          `Fator bruto (sem trava): ${rawFactor}\n` +
-          `Fator aplicado: ${factor}\n`;
-
-        setStatus('Cálculo concluído com sucesso.', 'ok');
-
-      }catch(err){
-        console.error(err);
-        setStatus(`Erro: ${err.message}`, 'err');
-        outDate.textContent = '—';
-        outVar.textContent = '—';
-        outFactor.textContent = '—';
-        outRent.textContent = '—';
-        outList.textContent = '—';
-        diagEl.textContent = '—';
-      }finally{
-        btnEl.disabled = false;
-      }
-    });
-  </script>
+  <script src="/assets/site.js"></script>
 </body>
 </html>
