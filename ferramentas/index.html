@@ -2,14 +2,17 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Ferramentas — Shopping Center</title>
-  <link rel="stylesheet" href="../assets/styles.css" />
+  <link rel="stylesheet" href="/assets/styles.css" />
 </head>
 <body>
   <header class="nav">
     <div class="navInner">
-      <div class="brand"><span>Shopping Center</span><span class="badge">Ferramentas</span></div>
+      <div class="brand">
+        <span>Shopping Center</span>
+        <span class="badge">Ferramentas</span>
+      </div>
       <nav class="menu">
         <a id="nav-home" href="/">Home</a>
         <a id="nav-dicas" href="/dicas/">Dicas</a>
@@ -20,25 +23,33 @@
   </header>
 
   <main class="container">
-    <section class="hero">
+    <section class="heroCard">
       <h1>Ferramentas</h1>
-      <p>Utilitários práticos para apoiar decisões e rotinas de contrato.</p>
+      <p>Utilitários práticos para apoiar decisões e rotinas de contrato e gestão.</p>
     </section>
 
-    <h2 class="sectionTitle">Disponíveis</h2>
-    <div class="list">
-      <a class="item" href="/ferramentas/reajuste/">
-        <div>
-          <b>Calculadora de Reajuste</b>
-          <span>IGP-M, IGP-DI, IPCA, IPC-FIPE (SGS/BCB) + trava de deflação.</span>
+    <section class="grid2">
+      <div class="panel">
+        <div class="panelHead">
+          <h2>Disponíveis</h2>
+          <p>Lista de ferramentas já publicadas.</p>
         </div>
-        <span class="pill2">Abrir</span>
-      </a>
-    </div>
+        <div class="panelBody">
+          <a class="link" href="/ferramentas/reajuste/">Calculadora de Reajuste →</a>
+          <div class="footerNote">Em breve: multa/rescisão, simulação de escalonamento, etc.</div>
+        </div>
+      </div>
 
-    <footer class="footer">
-      Em breve: calculadora de multa/rescisão, simulação de escalonamento, etc.
-    </footer>
+      <div class="panel">
+        <div class="panelHead">
+          <h2>Fonte de dados</h2>
+          <p>Índices oficiais do Banco Central (SGS).</p>
+        </div>
+        <div class="panelBody">
+          <div class="msg">Os cálculos usam a API SGS/BCB via rota /api/sgs (proxy) para evitar erro de “Failed to fetch”.</div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="/assets/site.js"></script>
