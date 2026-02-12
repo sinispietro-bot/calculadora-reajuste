@@ -4,37 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Calculadora de Reajuste - Ferramentas</title>
-
-  <!-- Mantém o visual do seu site -->
   <link rel="stylesheet" href="../../assets/styles.css" />
-
-  <!-- Ajustes específicos desta página (bem pequeno) -->
-  <style>
-    /* garante que selects no tema escuro não fiquem “brancos” */
-    select option { background-color:#0b1225; color:#e6edf6; }
-  </style>
 </head>
 
 <body>
-  <!-- Topo (usa o mesmo padrão do seu site) -->
   <header class="nav">
     <div class="navInner">
       <div class="brand">
         <span>Shopping Center</span>
         <span class="badge">Ferramentas</span>
       </div>
-
       <nav class="menu">
-        <a href="../../">Home</a>
-        <a href="../../dicas/">Dicas</a>
-        <a class="active" href="../">Ferramentas</a>
-        <a href="../../planilhas/">Planilhas</a>
+        <a href="../../" id="nav-home">Home</a>
+        <a href="../../dicas/" id="nav-dicas">Dicas</a>
+        <a href="../" class="active" id="nav-ferramentas">Ferramentas</a>
+        <a href="../../planilhas/" id="nav-planilhas">Planilhas</a>
       </nav>
     </div>
   </header>
 
   <main class="container">
-    <div class="calcWrap">
+    <div class="calcGrid">
 
       <!-- ESQUERDA -->
       <section class="panel">
@@ -46,11 +36,11 @@
               Para <b>anual</b>, o sistema traz os reajustes <b>ano a ano</b> (quando houver dados).
             </p>
           </div>
-          <div class="pill">Brasil · índices oficiais</div>
+          <div class="badge">Brasil · índices oficiais</div>
         </div>
 
         <div class="body">
-          <div class="grid">
+          <div class="formGrid">
             <div>
               <label for="rent">Valor do aluguel (R$)</label>
               <div class="field">
@@ -108,66 +98,55 @@
             <pre id="diag">—</pre>
           </details>
 
-          <div style="margin-top:10px;">
-            <a class="backLink" href="../">← Voltar para Ferramentas</a>
-          </div>
+          <a class="backlink" href="../">← Voltar para Ferramentas</a>
         </div>
       </section>
 
       <!-- DIREITA -->
       <aside class="panel">
-        <div class="resHead">
-          <h2 class="resTitle">Resultado</h2>
-          <div class="resSub">Último reajuste calculado + visão ano a ano (anual).</div>
+        <div class="head" style="padding-bottom:12px;">
+          <div>
+            <h2 class="title" style="font-size:20px;margin:0;">Resultado</h2>
+            <p class="sub" style="margin-top:6px;font-size:13px;">Último reajuste calculado + visão ano a ano (anual).</p>
+          </div>
         </div>
 
-        <div class="cards compact">
-
-          <!-- KPIs em grid 2x2 -->
-          <div class="kpiGrid">
-            <div class="kpi">
-              <p class="k">Reajuste (referência)</p>
-              <p class="v" id="outDate">—</p>
-            </div>
-
-            <div class="kpi">
-              <p class="k">Variação no período</p>
-              <p class="v" id="outVar">—</p>
-            </div>
-
-            <div class="kpi">
-              <p class="k">Fator aplicado</p>
-              <p class="v" id="outFactor">—</p>
-            </div>
-
-            <div class="kpi">
-              <p class="k">Novo aluguel</p>
-              <p class="v" id="outRent">—</p>
-            </div>
+        <!-- KPIs compactos em 2x2 -->
+        <div class="kpiGrid">
+          <div class="kpi">
+            <p class="k">Reajuste (referência)</p>
+            <p class="v" id="outRef">—</p>
           </div>
+          <div class="kpi">
+            <p class="k">Variação no período</p>
+            <p class="v" id="outVar">—</p>
+          </div>
+          <div class="kpi">
+            <p class="k">Fator aplicado</p>
+            <p class="v" id="outFactor">—</p>
+          </div>
+          <div class="kpi">
+            <p class="k">Novo aluguel</p>
+            <p class="v" id="outRent">—</p>
+          </div>
+        </div>
 
-          <!-- Ano a ano (sem tabela quebrando: layout em linhas responsivas) -->
-          <section id="yearWrap" class="yyBox" style="display:none;">
-            <h3 class="yyTitle">Reajustes ano a ano (anual)</h3>
-            <p class="yyHint">Se o reajuste for futuro e não houver índice, aparece como <b>Sem dados</b>.</p>
+        <div class="section">
+          <div class="yyWrap">
+            <p class="yyTitle">Reajustes ano a ano (anual)</p>
+            <p class="yyDesc">
+              Se o reajuste for futuro e não houver índice publicado, aparece como <b>Sem dados</b>.
+            </p>
 
-            <div class="yyHead">
-              <div>Ano</div>
-              <div>Data do reajuste / Período</div>
-              <div>Variação</div>
-              <div>Novo aluguel</div>
-              <div>Status</div>
-            </div>
-
-            <div id="yearBody" class="yyRows"></div>
-          </section>
+            <div class="yyTable" id="yyBody"></div>
+          </div>
 
           <details>
             <summary>Ver meses e variações utilizadas (último cálculo)</summary>
             <pre id="outList">—</pre>
           </details>
 
-          <div class="hint" style="padding:0 2px;">Fonte: API SGS/BCB (via API do site).</div>
+          <div class="hint">Fonte: API SGS/BCB (via API do site).</div>
         </div>
       </aside>
 
