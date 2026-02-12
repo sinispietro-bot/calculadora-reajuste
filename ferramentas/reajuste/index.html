@@ -176,7 +176,7 @@
 
     .backLink{ display:inline-block; margin-top:14px; color:#cbd5e1; font-size:12.5px; }
 
-    /* ===== “Ano a ano” em formato compacto (sem esmagar colunas) ===== */
+    /* ===== “Ano a ano” (CORRIGIDO: sem quebrar palavras no meio) ===== */
     .tableWrap{
       overflow: visible;
       max-height: none;
@@ -185,19 +185,48 @@
       background: rgba(15,23,42,.35);
     }
 
-    table{ width:100%; border-collapse:collapse; table-layout: fixed; }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout: fixed; /* mantém as larguras previsíveis */
+    }
+
     th, td{
-      padding:9px 10px;
+      padding:10px 10px;
       border-bottom:1px solid rgba(255,255,255,.07);
       text-align:left;
       font-size:12.5px;
       vertical-align:top;
-      overflow-wrap:anywhere;
-    }
-    th{ color:#cbd5e1; font-weight:750; }
 
-    .muted{ color: var(--muted); }
-    .subcell{ display:block; margin-top:4px; font-size:11px; color: var(--muted); line-height:1.2; }
+      /* ✅ NADA de quebrar no meio da palavra */
+      word-break: normal;
+      overflow-wrap: normal;
+      hyphens: none;
+    }
+
+    th{
+      color:#cbd5e1;
+      font-weight:750;
+      font-size:12px;
+      white-space: nowrap; /* ✅ evita “Statu s” e “Variaçã o” */
+    }
+
+    td{
+      white-space: nowrap; /* ✅ mantém números/data intactos */
+    }
+
+    /* ✅ Só o subtexto pode quebrar linha (período considerado) */
+    .subcell{
+      display:block;
+      margin-top:6px;
+      font-size:11px;
+      color: var(--muted);
+      line-height:1.2;
+
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: anywhere; /* só aqui pode quebrar */
+    }
 
     .pillSmall{
       display:inline-block;
@@ -210,26 +239,30 @@
       white-space:nowrap;
     }
 
-    /* larguras (somente 5 colunas agora) */
-    .colYear{width:14%}
-    .colDate{width:28%}
-    .colVar{width:18%}
+    /* ✅ larguras (ajustadas para não esmagar Status) */
+    .colYear{width:12%}
+    .colDate{width:34%}
+    .colVar{width:16%}
     .colRent{width:26%}
-    .colStatus{width:14%}
+    .colStatus{width:12%}
 
-    /* ===== Mobile: vira “cards” automaticamente ===== */
-    @media (max-width: 640px){
+    /* Em telas bem estreitas: vira “card”, sem tabelinha esmagada */
+    @media (max-width: 760px){
       table, thead, tbody, th, td, tr{ display:block; }
       thead{ display:none; }
+
       tbody tr{
         border-bottom:1px solid rgba(255,255,255,.07);
         padding:10px 10px;
       }
+
       tbody td{
         border:0;
         padding:6px 0;
         font-size:13px;
+        white-space: normal; /* no modo card pode quebrar */
       }
+
       tbody td::before{
         content: attr(data-label);
         display:block;
@@ -237,6 +270,7 @@
         color: var(--muted);
         margin-bottom:2px;
       }
+
       .pillSmall{ margin-top:2px; }
     }
 
