@@ -1,37 +1,53 @@
 export default async function handler(req, res) {
   try {
-    const { serie, dataInicial, dataFinal } = req.query;
+    const { serie, start, end } = req.query;
 
-    if (!serie || !dataInicial || !dataFinal) {
+    if (!serie || !start || !end) {
       return res.status(400).json({
-        error: "Parâmetros obrigatórios: serie, dataInicial, dataFinal (dd/mm/aaaa)",
+        error: 'Parâmetros obrigatórios: serie, start, end (formato YYYY-MM-DD).',
       });
     }
 
-    const url = new URL(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${serie}/dados`);
-    url.searchParams.set("formato", "json");
-    url.searchParams.set("dataInicial", dataInicial);
-    url.searchParams.set("dataFinal", dataFinal);
+    // Converte YYYY-MM-DD -> dd/mm/aaaa
+    function toBR(d) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d));
+      if (!m) return null;
+      return `${m[3]}/${m[2]}/${m[1]}`;
+    }
+
+    const di = toBR(start);
+    const df = toBR(end);
+    if (!di || !df) {
+      return res.status(400).json({
+        error: 'Datas inválidas. Use start/end no formato YYYY-MM-DD.',
+      });
+    }
+
+    const url = new URL(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${encodeURIComponent(serie)}/dados`);
+    url.searchParams.set('formato', 'json');
+    url.searchParams.set('dataInicial', di);
+    url.searchParams.set('dataFinal', df);
 
     const r = await fetch(url.toString(), {
-      headers: { Accept: "application/json" },
+      headers: { Accept: 'application/json' },
     });
 
     if (!r.ok) {
-      const txt = await r.text().catch(() => "");
+      const txt = await r.text().catch(() => '');
       return res.status(r.status).json({
         error: `BCB retornou HTTP ${r.status}`,
-        detail: txt?.slice(0, 200) || "",
+        detail: txt?.slice(0, 300) || '',
         url: url.toString(),
       });
     }
 
     const data = await r.json();
 
-    // cache (ajuda a ficar mais rápido)
-    res.setHeader("Cache-Control", "s-maxage=3600, stale-while-revalidate=86400");
+    // Cache leve (ajuda performance/lentidão)
+    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
     return res.status(200).json({ url: url.toString(), data });
+
   } catch (e) {
-    return res.status(500).json({ error: "Erro interno", detail: String(e?.message || e) });
+    return res.status(500).json({ error: 'Falha interna na API', detail: String(e?.message || e) });
   }
 }
