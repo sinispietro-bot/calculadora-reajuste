@@ -8,7 +8,7 @@
   <!-- CSS do site -->
   <link rel="stylesheet" href="../../assets/styles.css" />
 
-  <!-- CSS da calculadora (o que funcionava) -->
+  <!-- CSS da calculadora + AJUSTES DO RESULTADO -->
   <style>
     :root{
       --bg1:#070a12;
@@ -31,7 +31,7 @@
     .calcPage{
       max-width:1100px;
       margin:0 auto;
-      padding:24px 18px 34px;
+      padding:20px 16px 26px; /* menor para caber “em 1 tela” */
     }
 
     .wrap{
@@ -39,7 +39,7 @@
       margin:0 auto;
       display:grid;
       grid-template-columns: 1.15fr .85fr;
-      gap:18px;
+      gap:14px; /* menor */
     }
     @media (max-width: 980px){
       .wrap{grid-template-columns:1fr}
@@ -54,7 +54,7 @@
     }
 
     .panel .head{
-      padding:22px 22px 16px;
+      padding:18px 18px 12px; /* menor */
       border-bottom:1px solid var(--line);
       display:flex;
       justify-content:space-between;
@@ -64,7 +64,7 @@
 
     .title{
       margin:0;
-      font-size:26px;
+      font-size:24px; /* levemente menor */
       letter-spacing:.2px;
     }
 
@@ -72,26 +72,26 @@
       font-size:12px;
       color:var(--text);
       border:1px solid var(--line);
-      padding:8px 10px;
+      padding:7px 10px;
       border-radius:999px;
       background:rgba(15,23,42,.55);
       white-space:nowrap;
     }
 
     .sub{
-      margin:10px 0 0;
+      margin:8px 0 0;
       color:var(--muted);
-      font-size:14px;
-      line-height:1.35;
+      font-size:13px; /* menor */
+      line-height:1.32;
       max-width:700px;
     }
 
-    .body{ padding:18px 22px 22px; }
+    .body{ padding:14px 18px 18px; } /* menor */
 
     .grid{
       display:grid;
       grid-template-columns: 1fr 1fr;
-      gap:14px;
+      gap:12px; /* menor */
     }
     @media (max-width: 720px){
       .grid{grid-template-columns:1fr}
@@ -99,20 +99,20 @@
 
     label{
       display:block;
-      font-size:13px;
+      font-size:12.5px; /* menor */
       color: #cbd5e1;
-      margin:0 0 8px;
+      margin:0 0 6px; /* menor */
     }
 
     .field{
       background: rgba(15,23,42,.7);
       border:1px solid var(--line);
       border-radius:14px;
-      padding:10px 12px;
+      padding:9px 11px; /* menor */
       display:flex;
       align-items:center;
       gap:10px;
-      min-height:48px;
+      min-height:44px; /* menor */
     }
 
     input, select{
@@ -121,24 +121,24 @@
       border:0;
       outline:none;
       color:var(--text);
-      font-size:15px;
+      font-size:14.5px; /* levemente menor */
     }
 
     input::placeholder{color:rgba(230,237,246,.35)}
 
     .hint{
-      margin-top:6px;
+      margin-top:5px;
       color:var(--muted);
-      font-size:12px;
-      line-height:1.25;
+      font-size:11.5px; /* menor */
+      line-height:1.2;
     }
 
     .row{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:14px;
-      margin-top:14px;
+      gap:12px;
+      margin-top:12px; /* menor */
       flex-wrap:wrap;
     }
 
@@ -146,7 +146,7 @@
       display:flex;
       align-items:center;
       gap:10px;
-      padding:10px 12px;
+      padding:9px 11px; /* menor */
       border:1px solid var(--line);
       border-radius:14px;
       background: rgba(15,23,42,.35);
@@ -156,71 +156,101 @@
     .btn{
       cursor:pointer;
       border:0;
-      padding:12px 18px;
+      padding:11px 16px; /* menor */
       border-radius:14px;
-      font-weight:700;
-      font-size:15px;
+      font-weight:800;
+      font-size:14.5px;
       color:#07101f;
       background: linear-gradient(90deg, var(--accent), var(--accent2));
-      min-width:160px;
+      min-width:150px;
     }
     .btn:disabled{opacity:.55; cursor:not-allowed}
 
     .status{
-      margin-top:14px;
+      margin-top:12px;
       border:1px solid var(--line);
       border-radius:14px;
-      padding:12px 14px;
+      padding:10px 12px; /* menor */
       background: rgba(15,23,42,.35);
       color: var(--muted);
-      font-size:13px;
+      font-size:12.5px; /* menor */
     }
     .status.ok{color:#d1fae5; border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.08);}
     .status.warn{color:#fff7ed; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.08);}
     .status.err{color:#ffe4e6; border-color: rgba(255,107,107,.38); background: rgba(255,107,107,.08);}
 
+    /* ===== RESULTADO (COMPACTO + GRID 2x2) ===== */
+
     .resHead{
-      padding:22px 22px 16px;
+      padding:16px 18px 12px; /* menor */
       border-bottom:1px solid var(--line);
     }
 
     .resTitle{
       margin:0;
-      font-size:20px;
+      font-size:18px; /* menor */
     }
 
-    .resSub{ margin:6px 0 0; color:var(--muted); font-size:13px; }
+    .resSub{
+      margin:5px 0 0;
+      color:var(--muted);
+      font-size:12px; /* menor */
+    }
 
-    .cards{ padding:16px 22px 22px; display:grid; gap:12px; }
+    .cards{
+      padding:12px 18px 16px; /* menor */
+      display:grid;
+      gap:10px; /* menor para reduzir altura */
+    }
+
+    /* container dos 4 KPIs principais em 2x2 */
+    .kpiGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 520px){
+      .kpiGrid{ grid-template-columns: 1fr; }
+    }
 
     .kpi{
       border:1px solid var(--line);
       background: rgba(15,23,42,.45);
       border-radius:16px;
-      padding:14px 14px;
+      padding:10px 12px; /* menor */
     }
-    .kpi .k{ color:var(--muted); font-size:12px; margin:0 0 6px;}
-    .kpi .v{ margin:0; font-size:20px; font-weight:800; letter-spacing:.2px;}
+    .kpi .k{
+      color:var(--muted);
+      font-size:11px; /* menor */
+      margin:0 0 6px;
+    }
+    .kpi .v{
+      margin:0;
+      font-size:17px; /* menor */
+      font-weight:850;
+      letter-spacing:.2px;
+      line-height:1.12;
+    }
 
     details{
       border:1px solid var(--line);
       background: rgba(15,23,42,.35);
       border-radius:16px;
-      padding:12px 14px;
+      padding:10px 12px; /* menor */
     }
     summary{
       cursor:pointer;
       color:#cbd5e1;
-      font-weight:650;
-      font-size:13px;
+      font-weight:700;
+      font-size:12.5px; /* menor */
     }
     pre{
-      margin:10px 0 0;
+      margin:8px 0 0;
       white-space:pre-wrap;
       word-break:break-word;
-      font-size:12px;
+      font-size:11.5px;
       color:#e2e8f0;
-      line-height:1.35;
+      line-height:1.32;
     }
 
     select option{
@@ -234,32 +264,40 @@
 
     .backLink{
       display:inline-block;
-      margin-top:16px;
+      margin-top:14px;
       color:#cbd5e1;
+      font-size:12.5px;
     }
 
-    /* tabela ano a ano */
+    /* ===== TABELA SEM SCROLL INTERNO ===== */
     .tableWrap{
-      overflow:auto;
+      overflow: visible;            /* REMOVE scroll interno */
+      max-height: none;             /* garante que não exista limite */
       border:1px solid var(--line);
       border-radius:16px;
       background: rgba(15,23,42,.35);
     }
+
     table{
       width:100%;
       border-collapse:collapse;
-      min-width:620px;
+      min-width: 0;                 /* permite caber sem criar overflow do container */
+      table-layout: fixed;          /* ajuda caber em menos altura e ficar organizado */
     }
+
     th, td{
-      padding:10px 12px;
+      padding:9px 10px;             /* menor */
       border-bottom:1px solid rgba(255,255,255,.07);
       text-align:left;
-      font-size:13px;
+      font-size:12.5px;             /* menor */
       vertical-align:top;
+      overflow-wrap:anywhere;       /* evita estourar coluna */
     }
-    th{ color:#cbd5e1; font-weight:700; }
+    th{ color:#cbd5e1; font-weight:750; }
     td{ color:#e6edf6; }
+
     .muted{ color: var(--muted); }
+
     .pillSmall{
       display:inline-block;
       font-size:11px;
@@ -270,6 +308,14 @@
       color:#cbd5e1;
       white-space:nowrap;
     }
+
+    /* deixa 6 colunas mais equilibradas, reduzindo altura total */
+    .colYear{width:12%}
+    .colDate{width:16%}
+    .colPeriod{width:30%}
+    .colVar{width:14%}
+    .colRent{width:16%}
+    .colStatus{width:12%}
   </style>
 </head>
 
@@ -357,7 +403,7 @@
 
           <div id="status" class="status">Preencha os campos e clique em <b>Calcular</b>.</div>
 
-          <details style="margin-top:12px;">
+          <details style="margin-top:10px;">
             <summary>Diagnóstico (URL consultada e período)</summary>
             <pre id="diag">—</pre>
           </details>
@@ -374,42 +420,47 @@
         </div>
 
         <div class="cards">
-          <div class="kpi">
-            <p class="k">Reajuste (referência)</p>
-            <p class="v" id="outDate">—</p>
+
+          <!-- KPIs em GRID 2x2 -->
+          <div class="kpiGrid">
+            <div class="kpi">
+              <p class="k">Reajuste (referência)</p>
+              <p class="v" id="outDate">—</p>
+            </div>
+
+            <div class="kpi">
+              <p class="k">Variação no período</p>
+              <p class="v" id="outVar">—</p>
+            </div>
+
+            <div class="kpi">
+              <p class="k">Fator aplicado</p>
+              <p class="v" id="outFactor">—</p>
+            </div>
+
+            <div class="kpi">
+              <p class="k">Novo aluguel</p>
+              <p class="v" id="outRent">—</p>
+            </div>
           </div>
 
-          <div class="kpi">
-            <p class="k">Variação no período</p>
-            <p class="v" id="outVar">—</p>
-          </div>
-
-          <div class="kpi">
-            <p class="k">Fator aplicado</p>
-            <p class="v" id="outFactor">—</p>
-          </div>
-
-          <div class="kpi">
-            <p class="k">Novo aluguel</p>
-            <p class="v" id="outRent">—</p>
-          </div>
-
-          <!-- NOVO: Ano a ano -->
+          <!-- Ano a ano -->
           <details open>
             <summary>Reajustes ano a ano (anual)</summary>
-            <div class="hint" style="margin:8px 0 10px;">
+            <div class="hint" style="margin:7px 0 10px;">
               Mostra cada aniversário do contrato. Se o reajuste for futuro e não houver índice, aparece como “Sem dados ainda”.
             </div>
+
             <div class="tableWrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Ano</th>
-                    <th>Data do reajuste</th>
-                    <th>Período considerado</th>
-                    <th>Variação</th>
-                    <th>Novo aluguel</th>
-                    <th>Status</th>
+                    <th class="colYear">Ano</th>
+                    <th class="colDate">Data do reajuste</th>
+                    <th class="colPeriod">Período considerado</th>
+                    <th class="colVar">Variação</th>
+                    <th class="colRent">Novo aluguel</th>
+                    <th class="colStatus">Status</th>
                   </tr>
                 </thead>
                 <tbody id="yearRows">
