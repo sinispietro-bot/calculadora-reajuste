@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Calculadora de Reajuste de Aluguel</title>
+  <title>Calculadora de Reajuste - Ferramentas</title>
+
+  <link rel="stylesheet" href="../../assets/styles.css" />
 
   <style>
     :root{
@@ -15,998 +17,424 @@
       --accent:#4f8cff;
       --accent2:#2dd4bf;
       --danger:#ff6b6b;
+      --ok:#22c55e;
       --shadow: 0 18px 60px rgba(0,0,0,.55);
       --radius:18px;
-      --panelGrad: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      --fieldBg: rgba(15,23,42,.7);
     }
 
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      color:var(--text);
-      background:
-        radial-gradient(1200px 700px at 15% 10%, rgba(79,140,255,.25), transparent 60%),
-        radial-gradient(900px 600px at 85% 20%, rgba(45,212,191,.18), transparent 55%),
-        radial-gradient(1200px 900px at 60% 120%, rgba(120,70,255,.14), transparent 60%),
-        linear-gradient(180deg, var(--bg1), var(--bg2));
-      min-height:100vh;
-      padding:18px 16px 28px;
-    }
 
-    /* NAV (só desta página) */
-    .calcNav{
-      max-width:1180px;
-      margin:0 auto 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-      padding:10px 12px;
-      border:1px solid var(--line);
-      border-radius:999px;
-      background: rgba(10,16,30,.45);
-      backdrop-filter: blur(8px);
-    }
-    .calcBrand{
-      display:flex; align-items:center; gap:10px;
-      font-weight:800; letter-spacing:.2px;
-      white-space:nowrap;
-    }
-    .calcPill{
-      font-size:12px;
-      border:1px solid var(--line);
-      padding:6px 10px;
-      border-radius:999px;
-      background:rgba(15,23,42,.55);
-      color:var(--text);
-    }
-    .calcMenu{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
-    .calcMenu a{
-      text-decoration:none;
-      color:var(--text);
-      font-size:14px;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid transparent;
-      opacity:.92;
-    }
-    .calcMenu a:hover{ border-color:var(--line); opacity:1; }
-    .calcMenu a.active{
-      border-color: rgba(79,140,255,.45);
-      background: rgba(79,140,255,.12);
-      opacity:1;
-    }
+    .calcPage{ max-width:1100px; margin:0 auto; padding:20px 16px 26px; }
 
     .wrap{
-      max-width:1180px;
+      max-width:1100px;
       margin:0 auto;
       display:grid;
       grid-template-columns: 1.15fr .85fr;
-      gap:18px;
+      gap:14px;
     }
-    @media (max-width: 980px){
-      .wrap{grid-template-columns:1fr}
-      .calcNav{border-radius:18px;}
-    }
+    @media (max-width: 980px){ .wrap{grid-template-columns:1fr} }
 
     .panel{
-      background: var(--panelGrad);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       border:1px solid var(--line);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
       overflow:hidden;
     }
-    .head{
-      padding:20px 20px 14px;
+
+    .panel .head{
+      padding:18px 18px 12px;
       border-bottom:1px solid var(--line);
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
       gap:12px;
     }
-    .title{
-      margin:0;
-      font-size:26px;
-      letter-spacing:.2px;
+
+    .title{ margin:0; font-size:24px; letter-spacing:.2px; }
+
+    .pill{
+      font-size:12px;
+      color:var(--text);
+      border:1px solid var(--line);
+      padding:7px 10px;
+      border-radius:999px;
+      background:rgba(15,23,42,.55);
+      white-space:nowrap;
     }
+
     .sub{
-      margin:10px 0 0;
+      margin:8px 0 0;
       color:var(--muted);
-      font-size:14px;
-      line-height:1.35;
-      max-width:720px;
-    }
-    .body{ padding:16px 20px 18px; }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:14px;
-    }
-    @media (max-width: 720px){
-      .grid{grid-template-columns:1fr}
-    }
-
-    label{
-      display:block;
       font-size:13px;
-      color: #cbd5e1;
-      margin:0 0 8px;
+      line-height:1.32;
+      max-width:700px;
     }
+
+    .body{ padding:14px 18px 18px; }
+
+    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    @media (max-width: 720px){ .grid{grid-template-columns:1fr} }
+
+    label{ display:block; font-size:12.5px; color:#cbd5e1; margin:0 0 6px; }
+
     .field{
-      background: var(--fieldBg);
+      background: rgba(15,23,42,.7);
       border:1px solid var(--line);
       border-radius:14px;
-      padding:10px 12px;
+      padding:9px 11px;
       display:flex;
       align-items:center;
       gap:10px;
-      min-height:48px;
+      min-height:44px;
     }
+
     input, select{
       width:100%;
-      background: transparent;
+      background:transparent;
       border:0;
       outline:none;
       color:var(--text);
-      font-size:15px;
+      font-size:14.5px;
     }
-    input::placeholder{color:rgba(230,237,246,.35)}
-    .hint{
-      margin-top:6px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.25;
-    }
+
+    .hint{ margin-top:5px; color:var(--muted); font-size:11.5px; line-height:1.2; }
 
     .row{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:14px;
-      margin-top:14px;
+      gap:12px;
+      margin-top:12px;
       flex-wrap:wrap;
     }
+
     .check{
       display:flex;
       align-items:center;
       gap:10px;
-      padding:10px 12px;
+      padding:9px 11px;
       border:1px solid var(--line);
       border-radius:14px;
       background: rgba(15,23,42,.35);
-      user-select:none;
     }
     .check input{width:auto; transform:scale(1.05);}
 
     .btn{
       cursor:pointer;
       border:0;
-      padding:12px 18px;
+      padding:11px 16px;
       border-radius:14px;
       font-weight:800;
-      font-size:15px;
+      font-size:14.5px;
       color:#07101f;
       background: linear-gradient(90deg, var(--accent), var(--accent2));
-      min-width:180px;
+      min-width:150px;
     }
-    .btn:disabled{opacity:.55; cursor:not-allowed}
 
     .status{
-      margin-top:14px;
+      margin-top:12px;
       border:1px solid var(--line);
       border-radius:14px;
-      padding:12px 14px;
+      padding:10px 12px;
       background: rgba(15,23,42,.35);
       color: var(--muted);
-      font-size:13px;
+      font-size:12.5px;
     }
     .status.ok{color:#d1fae5; border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.08);}
+    .status.warn{color:#fff7ed; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.08);}
     .status.err{color:#ffe4e6; border-color: rgba(255,107,107,.38); background: rgba(255,107,107,.08);}
+
+    /* ===== RESULTADO ===== */
+    .resHead{ padding:16px 18px 12px; border-bottom:1px solid var(--line); }
+    .resTitle{ margin:0; font-size:18px; }
+    .resSub{ margin:5px 0 0; color:var(--muted); font-size:12px; }
+
+    .cards{ padding:12px 18px 16px; display:grid; gap:10px; }
+
+    .kpiGrid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    @media (max-width: 520px){ .kpiGrid{ grid-template-columns:1fr; } }
+
+    .kpi{
+      border:1px solid var(--line);
+      background: rgba(15,23,42,.45);
+      border-radius:16px;
+      padding:10px 12px;
+    }
+    .kpi .k{ color:var(--muted); font-size:11px; margin:0 0 6px; }
+    .kpi .v{ margin:0; font-size:17px; font-weight:850; line-height:1.12; }
 
     details{
       border:1px solid var(--line);
       background: rgba(15,23,42,.35);
       border-radius:16px;
-      padding:12px 14px;
+      padding:10px 12px;
     }
-    summary{ cursor:pointer; color:#cbd5e1; font-weight:700; font-size:13px; }
-    pre{
-      margin:10px 0 0;
-      white-space:pre-wrap;
-      word-break:break-word;
-      font-size:12px;
-      color:#e2e8f0;
-      line-height:1.35;
-    }
+    summary{ cursor:pointer; color:#cbd5e1; font-weight:700; font-size:12.5px; }
+    pre{ margin:8px 0 0; white-space:pre-wrap; word-break:break-word; font-size:11.5px; color:#e2e8f0; line-height:1.32; }
 
-    /* Resultados */
-    .resHead{
-      padding:18px 18px 12px;
-      border-bottom:1px solid var(--line);
-    }
-    .resTitle{ margin:0; font-size:20px; }
-    .resSub{ margin:6px 0 0; color:var(--muted); font-size:13px; }
+    .backLink{ display:inline-block; margin-top:14px; color:#cbd5e1; font-size:12.5px; }
 
-    .resBody{ padding:14px 18px 18px; display:grid; gap:12px; }
-
-    /* 4 KPIs em grid 2x2 (compacto) */
-    .kpiGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
-    .kpi{
+    /* ===== “Ano a ano” (CORRIGIDO: sem quebrar palavras no meio) ===== */
+    .tableWrap{
+      overflow: visible;
+      max-height: none;
       border:1px solid var(--line);
-      background: rgba(15,23,42,.45);
       border-radius:16px;
-      padding:12px 12px;
-      min-height:64px;
-    }
-    .kpi .k{ color:var(--muted); font-size:12px; margin:0 0 6px;}
-    .kpi .v{ margin:0; font-size:18px; font-weight:900; letter-spacing:.2px;}
-    @media (max-width: 420px){
-      .kpiGrid{grid-template-columns:1fr}
-    }
-
-    /* Ano a ano - container */
-    .yearBox{
-      border:1px solid var(--line);
       background: rgba(15,23,42,.35);
-      border-radius:16px;
-      padding:12px 12px;
-    }
-    .yearTitle{
-      margin:0 0 8px;
-      font-size:14px;
-      font-weight:900;
-      letter-spacing:.2px;
-    }
-    .yearNote{
-      margin:0 0 10px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.25;
     }
 
-    /* Tabela desktop (sem scroll interno) */
-    .yearTable{
+    table{
       width:100%;
-      border-collapse: collapse;
-      table-layout: fixed;
+      border-collapse:collapse;
+      table-layout: fixed; /* mantém as larguras previsíveis */
     }
-    .yearTable th, .yearTable td{
-      border-top:1px solid rgba(255,255,255,.06);
-      padding:10px 8px;
-      vertical-align:top;
-    }
-    .yearTable thead th{
-      border-top:0;
-      color:#cbd5e1;
-      font-size:12px;
-      font-weight:800;
-    }
-    .yearTable td{
-      font-size:13px;
-      color:var(--text);
-    }
-    .colYear{ width:72px; }
-    .colDate{ width:128px; }
-    .colVar{ width:120px; }
-    .colRent{ width:140px; }
-    .colStatus{ width:110px; }
 
-    .subline{
-      display:block;
-      margin-top:4px;
-      color:var(--muted);
-      font-size:12px;
-      line-height:1.2;
+    th, td{
+      padding:10px 10px;
+      border-bottom:1px solid rgba(255,255,255,.07);
+      text-align:left;
+      font-size:12.5px;
+      vertical-align:top;
+
+      /* ✅ NADA de quebrar no meio da palavra */
+      word-break: normal;
+      overflow-wrap: normal;
+      hyphens: none;
     }
-    .badgeOk, .badgeNo{
-      display:inline-block;
-      padding:4px 10px;
-      border-radius:999px;
+
+    th{
+      color:#cbd5e1;
+      font-weight:750;
       font-size:12px;
-      font-weight:800;
+      white-space: nowrap; /* ✅ evita “Statu s” e “Variaçã o” */
+    }
+
+    td{
+      white-space: nowrap; /* ✅ mantém números/data intactos */
+    }
+
+    /* ✅ Só o subtexto pode quebrar linha (período considerado) */
+    .subcell{
+      display:block;
+      margin-top:6px;
+      font-size:11px;
+      color: var(--muted);
+      line-height:1.2;
+
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: anywhere; /* só aqui pode quebrar */
+    }
+
+    .pillSmall{
+      display:inline-block;
+      font-size:11px;
+      padding:5px 8px;
+      border-radius:999px;
       border:1px solid var(--line);
-      background: rgba(255,255,255,.04);
+      background: rgba(15,23,42,.55);
+      color:#cbd5e1;
       white-space:nowrap;
     }
-    .badgeOk{
-      border-color: rgba(34,197,94,.35);
-      background: rgba(34,197,94,.08);
-      color:#d1fae5;
-    }
-    .badgeNo{
-      border-color: rgba(255,107,107,.38);
-      background: rgba(255,107,107,.08);
-      color:#ffe4e6;
-    }
 
-    /* Mobile: vira cards (pra nunca esmagar coluna) */
-    .yearCards{ display:none; gap:10px; }
-    .yCard{
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(15,23,42,.28);
-      border-radius:14px;
-      padding:10px 10px;
-      display:grid;
-      gap:8px;
-    }
-    .yRow{
-      display:grid;
-      grid-template-columns: 110px 1fr;
-      gap:10px;
-      align-items:start;
-      font-size:13px;
-    }
-    .yKey{ color:#cbd5e1; font-size:12px; font-weight:800; }
-    .yVal{ color:var(--text); }
+    /* ✅ larguras (ajustadas para não esmagar Status) */
+    .colYear{width:12%}
+    .colDate{width:34%}
+    .colVar{width:16%}
+    .colRent{width:26%}
+    .colStatus{width:12%}
+
+    /* Em telas bem estreitas: vira “card”, sem tabelinha esmagada */
     @media (max-width: 760px){
-      .yearTable{ display:none; }
-      .yearCards{ display:grid; }
+      table, thead, tbody, th, td, tr{ display:block; }
+      thead{ display:none; }
+
+      tbody tr{
+        border-bottom:1px solid rgba(255,255,255,.07);
+        padding:10px 10px;
+      }
+
+      tbody td{
+        border:0;
+        padding:6px 0;
+        font-size:13px;
+        white-space: normal; /* no modo card pode quebrar */
+      }
+
+      tbody td::before{
+        content: attr(data-label);
+        display:block;
+        font-size:11px;
+        color: var(--muted);
+        margin-bottom:2px;
+      }
+
+      .pillSmall{ margin-top:2px; }
     }
 
-    /* dropdown no tema escuro */
     select option{ background-color:#0b1225; color:#e6edf6; }
     select optgroup{ background-color:#0b1225; color:#cbd5e1; }
-
-    .footerHint{
-      color:var(--muted);
-      font-size:12px;
-      padding:0 2px;
-      margin-top:2px;
-    }
-
-    .backLink{
-      display:inline-block;
-      margin-top:10px;
-      color:#cbd5e1;
-      text-decoration:none;
-      font-size:13px;
-      opacity:.9;
-    }
-    .backLink:hover{opacity:1; text-decoration:underline;}
   </style>
 </head>
 
 <body>
-  <!-- Nav só desta página (não mexe no resto do site) -->
-  <div class="calcNav">
-    <div class="calcBrand">
-      Shopping Center
-      <span class="calcPill">Ferramentas</span>
+  <header class="nav">
+    <div class="navInner">
+      <div class="brand"><span>Shopping Center</span><span class="badge">Ferramentas</span></div>
+      <nav class="menu">
+        <a href="/">Home</a>
+        <a href="/dicas/">Dicas</a>
+        <a href="/ferramentas/">Ferramentas</a>
+        <a href="/planilhas/">Planilhas</a>
+      </nav>
     </div>
-    <nav class="calcMenu">
-      <a href="/">Home</a>
-      <a href="/dicas/">Dicas</a>
-      <a class="active" href="/ferramentas/">Ferramentas</a>
-      <a href="/planilhas/">Planilhas</a>
-    </nav>
-  </div>
+  </header>
 
-  <div class="wrap">
+  <main class="calcPage">
+    <div class="wrap">
 
-    <!-- ESQUERDA -->
-    <section class="panel">
-      <div class="head">
-        <div>
-          <h1 class="title">Calculadora de Reajuste de Aluguel</h1>
-          <p class="sub">
-            Você informa <b>aluguel</b>, <b>data de início</b>, <b>índice</b> e <b>periodicidade</b>.
-            Para <b>anual</b>, o sistema traz os reajustes <b>ano a ano</b> (quando houver dados).
-          </p>
-        </div>
-        <div class="calcPill">Brasil · índices oficiais</div>
-      </div>
-
-      <div class="body">
-        <div class="grid">
+      <!-- ESQUERDA -->
+      <section class="panel">
+        <div class="head">
           <div>
-            <label for="rent">Valor do aluguel (R$)</label>
-            <div class="field">
-              <input id="rent" type="text" inputmode="numeric" placeholder="Ex.: 10000 ou 10.000,00" autocomplete="off" />
-            </div>
-            <div class="hint">Digite <b>10000</b> e ao sair do campo vira <b>R$ 10.000,00</b>.</div>
+            <h1 class="title">Calculadora de Reajuste de Aluguel</h1>
+            <p class="sub">
+              Você informa <b>aluguel</b>, <b>data de início</b>, <b>índice</b> e <b>periodicidade</b>.
+              Para <b>anual</b>, o sistema traz os reajustes <b>ano a ano</b> (quando houver dados).
+            </p>
           </div>
-
-          <div>
-            <label for="idx">Índice</label>
-            <div class="field">
-              <select id="idx">
-                <option value="189">IGP-M (FGV) — SGS 189</option>
-                <option value="190">IGP-DI (FGV) — SGS 190</option>
-                <option value="433">IPCA (IBGE) — SGS 433</option>
-                <option value="193">IPC-FIPE — SGS 193</option>
-              </select>
-            </div>
-            <div class="hint">Índices oficiais via SGS/BCB.</div>
-          </div>
-
-          <div>
-            <label for="start">Data de início do contrato</label>
-            <div class="field">
-              <input id="start" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" autocomplete="off" maxlength="10" />
-            </div>
-            <div class="hint">Máscara: <b>dd/mm/aaaa</b>. O cálculo considera o mês/ano.</div>
-          </div>
-
-          <div>
-            <label for="freq">Periodicidade do reajuste</label>
-            <div class="field">
-              <select id="freq">
-                <option value="monthly">Mensal</option>
-                <option value="annual" selected>Anual (ano a ano)</option>
-              </select>
-            </div>
-            <div class="hint">Anual: mostra cada aniversário até hoje (e sinaliza quando for futuro).</div>
-          </div>
+          <div class="pill">Brasil · índices oficiais</div>
         </div>
 
-        <div class="row">
-          <label class="check" for="lock">
-            <input id="lock" type="checkbox" />
-            Travar deflação (não reduzir)
-          </label>
+        <div class="body">
+          <div class="grid">
+            <div>
+              <label for="rent">Valor do aluguel (R$)</label>
+              <div class="field">
+                <input id="rent" type="text" inputmode="numeric" placeholder="Ex.: 10000 ou 10.000,00" autocomplete="off" />
+              </div>
+              <div class="hint">Digite <b>10000</b> e ao sair do campo vira <b>R$ 10.000,00</b>.</div>
+            </div>
 
-          <button id="btn" class="btn">Calcular</button>
+            <div>
+              <label for="idx">Índice</label>
+              <div class="field">
+                <select id="idx">
+                  <option value="189">IGP-M (FGV) — SGS 189</option>
+                  <option value="190">IGP-DI (FGV) — SGS 190</option>
+                  <option value="433">IPCA (IBGE) — SGS 433</option>
+                  <option value="193">IPC-FIPE — SGS 193</option>
+                </select>
+              </div>
+              <div class="hint">Selecione o índice previsto no contrato.</div>
+            </div>
+
+            <div>
+              <label for="start">Data de início do contrato</label>
+              <div class="field">
+                <input id="start" type="text" inputmode="numeric" placeholder="dd/mm/aaaa" autocomplete="off" maxlength="10" />
+              </div>
+              <div class="hint">Máscara: <b>dd/mm/aaaa</b>. O cálculo considera o mês/ano.</div>
+            </div>
+
+            <div>
+              <label for="freq">Periodicidade do reajuste</label>
+              <div class="field">
+                <select id="freq">
+                  <option value="monthly">Mensal (1 reajuste)</option>
+                  <option value="annual" selected>Anual (ano a ano)</option>
+                </select>
+              </div>
+              <div class="hint">Anual: mostra cada aniversário até hoje (ou sinaliza quando for futuro).</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <label class="check" for="lock">
+              <input id="lock" type="checkbox" />
+              Travar deflação (não reduzir)
+            </label>
+
+            <button id="btn" class="btn">Calcular</button>
+          </div>
+
+          <div id="status" class="status">Preencha os campos e clique em <b>Calcular</b>.</div>
+
+          <details style="margin-top:10px;">
+            <summary>Diagnóstico (URL consultada e período)</summary>
+            <pre id="diag">—</pre>
+          </details>
+
+          <a class="backLink" href="/ferramentas/">← Voltar para Ferramentas</a>
+        </div>
+      </section>
+
+      <!-- DIREITA -->
+      <aside class="panel">
+        <div class="resHead">
+          <h2 class="resTitle">Resultado</h2>
+          <div class="resSub">Último reajuste calculado + visão ano a ano (anual).</div>
         </div>
 
-        <div id="status" class="status">Preencha os campos e clique em <b>Calcular</b>.</div>
+        <div class="cards">
 
-        <details style="margin-top:12px;">
-          <summary>Diagnóstico (URL consultada e período)</summary>
-          <pre id="diag">—</pre>
-        </details>
+          <div class="kpiGrid">
+            <div class="kpi">
+              <p class="k">Reajuste (referência)</p>
+              <p class="v" id="outDate">—</p>
+            </div>
+            <div class="kpi">
+              <p class="k">Variação no período</p>
+              <p class="v" id="outVar">—</p>
+            </div>
+            <div class="kpi">
+              <p class="k">Fator aplicado</p>
+              <p class="v" id="outFactor">—</p>
+            </div>
+            <div class="kpi">
+              <p class="k">Novo aluguel</p>
+              <p class="v" id="outRent">—</p>
+            </div>
+          </div>
 
-        <a class="backLink" href="/ferramentas/">← Voltar para Ferramentas</a>
-      </div>
-    </section>
+          <details open>
+            <summary>Reajustes ano a ano (anual)</summary>
+            <div class="hint" style="margin:7px 0 10px;">
+              A coluna “Período considerado” aparece abaixo da data do reajuste, para manter o layout limpo.
+            </div>
 
-    <!-- DIREITA -->
-    <aside class="panel">
-      <div class="resHead">
-        <h2 class="resTitle">Resultado</h2>
-        <div class="resSub">Último reajuste calculado + visão ano a ano (anual).</div>
-      </div>
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="colYear">Ano</th>
+                    <th class="colDate">Data do reajuste</th>
+                    <th class="colVar">Variação</th>
+                    <th class="colRent">Novo aluguel</th>
+                    <th class="colStatus">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="yearRows">
+                  <tr><td colspan="5" class="muted">—</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
 
-      <div class="resBody">
-        <div class="kpiGrid">
-          <div class="kpi">
-            <p class="k">Reajuste (referência)</p>
-            <p class="v" id="outDate">—</p>
-          </div>
-          <div class="kpi">
-            <p class="k">Variação no período</p>
-            <p class="v" id="outVar">—</p>
-          </div>
-          <div class="kpi">
-            <p class="k">Fator aplicado</p>
-            <p class="v" id="outFactor">—</p>
-          </div>
-          <div class="kpi">
-            <p class="k">Novo aluguel</p>
-            <p class="v" id="outRent">—</p>
-          </div>
+          <details>
+            <summary>Ver meses e variações utilizadas (último cálculo)</summary>
+            <pre id="outList">—</pre>
+          </details>
+
+          <div class="hint" style="padding:0 2px;">Fonte: API SGS/BCB.</div>
         </div>
+      </aside>
 
-        <div class="yearBox">
-          <p class="yearTitle">Reajustes ano a ano (anual)</p>
-          <p class="yearNote">
-            Se o reajuste for futuro e ainda não houver índice, aparece como <b>Sem dados ainda</b>.
-            O período considerado é do mês inicial até o mês anterior ao reajuste.
-          </p>
+    </div>
+  </main>
 
-          <!-- Desktop table -->
-          <table class="yearTable" aria-label="Reajustes ano a ano">
-            <thead>
-              <tr>
-                <th class="colYear">Ano</th>
-                <th class="colDate">Data do reajuste</th>
-                <th>Período considerado</th>
-                <th class="colVar">Variação</th>
-                <th class="colRent">Novo aluguel</th>
-                <th class="colStatus">Status</th>
-              </tr>
-            </thead>
-            <tbody id="yearRows">
-              <tr><td colspan="6" style="color:var(--muted); font-size:13px; padding:12px 8px;">—</td></tr>
-            </tbody>
-          </table>
-
-          <!-- Mobile cards -->
-          <div class="yearCards" id="yearCards">
-            <!-- preenchido via JS -->
-          </div>
-        </div>
-
-        <details>
-          <summary>Ver meses e variações utilizadas (último cálculo)</summary>
-          <pre id="outList">—</pre>
-        </details>
-
-        <div class="footerHint">Fonte: API SGS/BCB (consulta direta).</div>
-      </div>
-    </aside>
-  </div>
-
-  <script>
-    // ========= Helpers (formatação / parsing) =========
-    const nfBRL = new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' });
-    const nfPct = new Intl.NumberFormat('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
-
-    // Parse robusto: aceita "10000", "10.000,00", "R$ 10.000,00"
-    function parseBRL(str){
-      if(!str) return NaN;
-      const s = String(str)
-        .replace(/\s/g,'')
-        .replace('R$','')
-        .replace(/\./g,'')
-        .replace(',', '.')
-        .replace(/[^\d.-]/g,'');
-      const n = Number(s);
-      return Number.isFinite(n) ? n : NaN;
-    }
-
-    function formatBRL(n){ return nfBRL.format(n); }
-
-    // Máscara simples de data dd/mm/aaaa
-    function maskDateInput(el){
-      el.addEventListener('input', () => {
-        let v = el.value.replace(/\D/g,'').slice(0,8);
-        if(v.length >= 5) el.value = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
-        else if(v.length >= 3) el.value = v.slice(0,2) + '/' + v.slice(2);
-        else el.value = v;
-      });
-    }
-
-    function parseDateBR(str){
-      const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(str || '');
-      if(!m) return null;
-      const dd = Number(m[1]), mm = Number(m[2]), yyyy = Number(m[3]);
-      if(mm < 1 || mm > 12) return null;
-      if(dd < 1 || dd > 31) return null;
-      const d = new Date(yyyy, mm-1, dd);
-      if(d.getFullYear() !== yyyy || d.getMonth() !== (mm-1) || d.getDate() !== dd) return null;
-      return d;
-    }
-
-    function formatDateBR(d){
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      const yyyy = d.getFullYear();
-      return \`\${dd}/\${mm}/\${yyyy}\`;
-    }
-
-    function ddmmyyyy(d){
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      const yyyy = d.getFullYear();
-      return \`\${dd}/\${mm}/\${yyyy}\`;
-    }
-
-    function firstOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
-    function addMonths(d, months){ return new Date(d.getFullYear(), d.getMonth() + months, d.getDate()); }
-    function addYears(d, years){ return new Date(d.getFullYear() + years, d.getMonth(), d.getDate()); }
-
-    function ymKeyFromBRDate(ddmmyyyyStr){
-      // API vem "01/11/2024"
-      const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(ddmmyyyyStr || '');
-      if(!m) return null;
-      return \`\${m[3]}-\${m[2]}\`; // YYYY-MM
-    }
-    function ymKeyFromDate(d){
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      return \`\${yyyy}-\${mm}\`;
-    }
-
-    // ========= Séries =========
-    // Aqui assumimos variação % mensal (padrão do seu modelo original)
-    const SERIES = {
-      189: { name: 'IGP-M (FGV)' },
-      190: { name: 'IGP-DI (FGV)' },
-      433: { name: 'IPCA (IBGE)' },
-      193: { name: 'IPC-FIPE' },
-    };
-
-    async function fetchSGS(seriesCode, startDate, endDate){
-      const url = new URL(\`https://api.bcb.gov.br/dados/serie/bcdata.sgs.\${seriesCode}/dados\`);
-      url.searchParams.set('formato','json');
-      url.searchParams.set('dataInicial', ddmmyyyy(startDate));
-      url.searchParams.set('dataFinal', ddmmyyyy(endDate));
-
-      const res = await fetch(url.toString(), { headers: { 'Accept':'application/json' } });
-      if(!res.ok){
-        const txt = await res.text().catch(()=> '');
-        throw new Error(\`Falha ao consultar BCB (HTTP \${res.status}). \${txt ? 'Detalhe: '+txt.slice(0,140) : ''}\`);
-      }
-      const data = await res.json();
-      if(!Array.isArray(data)) throw new Error('Resposta inesperada do BCB.');
-      return { url: url.toString(), data };
-    }
-
-    function pctFromRowValor(valorStr){
-      // "0,87" -> 0.87
-      const v = Number(String(valorStr).replace(',','.'));
-      return Number.isFinite(v) ? v : null;
-    }
-
-    function computeFactorFromMonthlyPct(monthRows){
-      // fator = Π(1 + v/100)
-      let factor = 1;
-      const lines = [];
-      for(const row of monthRows){
-        const v = pctFromRowValor(row.valor);
-        if(v === null) continue;
-        factor *= (1 + v/100);
-        lines.push(\`\${row.data}: \${nfPct.format(v)}%\`);
-      }
-      return { factor, lines };
-    }
-
-    // ========= UI =========
-    const rentEl = document.getElementById('rent');
-    const idxEl  = document.getElementById('idx');
-    const startEl= document.getElementById('start');
-    const freqEl = document.getElementById('freq');
-    const lockEl = document.getElementById('lock');
-    const btnEl  = document.getElementById('btn');
-    const statusEl = document.getElementById('status');
-    const diagEl = document.getElementById('diag');
-
-    const outDate = document.getElementById('outDate');
-    const outVar = document.getElementById('outVar');
-    const outFactor = document.getElementById('outFactor');
-    const outRent = document.getElementById('outRent');
-    const outList = document.getElementById('outList');
-
-    const yearRows = document.getElementById('yearRows');
-    const yearCards = document.getElementById('yearCards');
-
-    maskDateInput(startEl);
-
-    // moeda: formata ao sair do campo (não “come” zeros)
-    rentEl.addEventListener('blur', () => {
-      const n = parseBRL(rentEl.value);
-      if(Number.isFinite(n)) rentEl.value = formatBRL(n);
-    });
-
-    function setStatus(msg, kind){
-      statusEl.classList.remove('ok','err');
-      if(kind) statusEl.classList.add(kind);
-      statusEl.innerHTML = msg;
-    }
-
-    function clearOutputs(){
-      outDate.textContent = '—';
-      outVar.textContent = '—';
-      outFactor.textContent = '—';
-      outRent.textContent = '—';
-      outList.textContent = '—';
-      diagEl.textContent = '—';
-      yearRows.innerHTML = '<tr><td colspan="6" style="color:var(--muted); font-size:13px; padding:12px 8px;">—</td></tr>';
-      yearCards.innerHTML = '';
-    }
-
-    function fmtFactor(f){
-      return f.toLocaleString('pt-BR', { minimumFractionDigits:6, maximumFractionDigits:6 });
-    }
-
-    function monthSpanInclusive(aFirst, bFirst){
-      return (bFirst.getFullYear()-aFirst.getFullYear())*12 + (bFirst.getMonth()-aFirst.getMonth()) + 1;
-    }
-
-    function monthKeyList(startFirst, endFirst){
-      const keys = [];
-      let cur = new Date(startFirst.getFullYear(), startFirst.getMonth(), 1);
-      while(cur <= endFirst){
-        keys.push(ymKeyFromDate(cur));
-        cur = new Date(cur.getFullYear(), cur.getMonth()+1, 1);
-      }
-      return keys;
-    }
-
-    function renderYearTable(rows){
-      // rows: [{year, refDate, periodText, variationPct, newRent, status}]
-      if(!rows.length){
-        yearRows.innerHTML = '<tr><td colspan="6" style="color:var(--muted); font-size:13px; padding:12px 8px;">—</td></tr>';
-        yearCards.innerHTML = '';
-        return;
-      }
-
-      yearRows.innerHTML = rows.map(r => {
-        const badge = r.status === 'OK'
-          ? '<span class="badgeOk">OK</span>'
-          : '<span class="badgeNo">Sem dados</span>';
-
-        const varTxt = r.variationPct == null ? '—' : \`\${nfPct.format(r.variationPct)}%\`;
-        const rentTxt = r.newRent == null ? '—' : formatBRL(r.newRent);
-
-        return \`
-          <tr>
-            <td class="colYear">\${r.year}</td>
-            <td class="colDate">\${r.refDate}</td>
-            <td>\${r.periodText}</td>
-            <td class="colVar">\${varTxt}</td>
-            <td class="colRent"><b>\${rentTxt}</b></td>
-            <td class="colStatus">\${badge}</td>
-          </tr>
-        \`;
-      }).join('');
-
-      // Mobile cards
-      yearCards.innerHTML = rows.map(r => {
-        const badge = r.status === 'OK'
-          ? '<span class="badgeOk">OK</span>'
-          : '<span class="badgeNo">Sem dados</span>';
-
-        const varTxt = r.variationPct == null ? '—' : \`\${nfPct.format(r.variationPct)}%\`;
-        const rentTxt = r.newRent == null ? '—' : formatBRL(r.newRent);
-
-        return \`
-          <div class="yCard">
-            <div class="yRow"><div class="yKey">Ano</div><div class="yVal">\${r.year}</div></div>
-            <div class="yRow"><div class="yKey">Reajuste</div><div class="yVal">\${r.refDate}</div></div>
-            <div class="yRow"><div class="yKey">Período</div><div class="yVal">\${r.periodText}</div></div>
-            <div class="yRow"><div class="yKey">Variação</div><div class="yVal">\${varTxt}</div></div>
-            <div class="yRow"><div class="yKey">Novo aluguel</div><div class="yVal"><b>\${rentTxt}</b></div></div>
-            <div class="yRow"><div class="yKey">Status</div><div class="yVal">\${badge}</div></div>
-          </div>
-        \`;
-      }).join('');
-    }
-
-    btnEl.addEventListener('click', async () => {
-      try{
-        btnEl.disabled = true;
-        setStatus('Calculando... consultando dados oficiais.', null);
-
-        const rent = parseBRL(rentEl.value);
-        if(!Number.isFinite(rent) || rent <= 0) throw new Error('Informe um valor de aluguel válido.');
-
-        const start = parseDateBR(startEl.value);
-        if(!start) throw new Error('Informe a data de início no formato dd/mm/aaaa.');
-
-        const code = Number(idxEl.value);
-        const cfg = SERIES[code];
-        if(!cfg) throw new Error('Índice inválido.');
-
-        const freq = freqEl.value; // monthly | annual
-        const locked = lockEl.checked;
-
-        clearOutputs();
-
-        const startMonth = firstOfMonth(start);
-
-        // Vamos buscar do início até "hoje" (mês atual), e trabalhar com o que vier de dados.
-        // (Se o BCB ainda não tiver o mês atual, ele simplesmente não retorna)
-        const today = new Date();
-        const endFetch = firstOfMonth(today);
-
-        // Limite 10 anos (120 meses) para segurança
-        const maxEnd = firstOfMonth(addMonths(startMonth, 119));
-        const endFetchSafe = endFetch > maxEnd ? maxEnd : endFetch;
-
-        const monthsSpanFetch = monthSpanInclusive(startMonth, endFetchSafe);
-        if(monthsSpanFetch <= 0) throw new Error('Período inválido. Verifique a data de início.');
-
-        const { url, data } = await fetchSGS(code, startMonth, endFetchSafe);
-
-        // Mapa YYYY-MM -> {data, valor}
-        const monthMap = new Map();
-        for(const row of data){
-          const k = ymKeyFromBRDate(row.data);
-          if(k) monthMap.set(k, row);
-        }
-
-        if(monthMap.size === 0){
-          throw new Error('O BCB não retornou dados para este índice/período.');
-        }
-
-        // Descobrir o último mês que realmente veio
-        const allKeysSorted = Array.from(monthMap.keys()).sort();
-        const lastKey = allKeysSorted[allKeysSorted.length - 1]; // "YYYY-MM"
-        const [lastY, lastM] = lastKey.split('-').map(Number);
-        const lastMonthAvailable = new Date(lastY, (lastM-1), 1);
-
-        // Função que calcula fator em um intervalo de meses (inclusive)
-        function factorForMonthRange(rangeStartFirst, rangeEndFirst){
-          const keys = monthKeyList(rangeStartFirst, rangeEndFirst);
-          const rows = [];
-          for(const k of keys){
-            const r = monthMap.get(k);
-            if(!r) return { ok:false, factor:null, lines:[], missing:true };
-            rows.push(r);
-          }
-          const { factor: rawFactor, lines } = computeFactorFromMonthlyPct(rows);
-          const applied = (locked && rawFactor < 1) ? 1 : rawFactor;
-          return { ok:true, factor: applied, rawFactor, lines, missing:false };
-        }
-
-        // ========= MENSAL =========
-        if(freq === 'monthly'){
-          const refDate = addMonths(start, 1);
-          const endMonth = firstOfMonth(addMonths(refDate, -1)); // mês anterior ao reajuste
-
-          // Se o mês final é maior que o último disponível, sem dados
-          if(endMonth > lastMonthAvailable){
-            setStatus('Sem dados ainda: o índice necessário para esse período ainda não foi divulgado pelo BCB.', 'err');
-
-            outDate.textContent = formatDateBR(refDate);
-            outVar.textContent = '—';
-            outFactor.textContent = '—';
-            outRent.textContent = '—';
-            outList.textContent = '—';
-
-            diagEl.textContent =
-              `URL consultada:\n${url}\n\n` +
-              `Índice: ${cfg.name} (SGS ${code})\n` +
-              `Periodicidade: Mensal\n` +
-              `Período necessário: ${ddmmyyyy(startMonth)} até ${ddmmyyyy(endMonth)}\n` +
-              `Último mês disponível no retorno: ${ddmmyyyy(lastMonthAvailable)}\n` +
-              `Status: Sem dados ainda\n`;
-
-            renderYearTable([]);
-            return;
-          }
-
-          const res = factorForMonthRange(startMonth, endMonth);
-          if(!res.ok) throw new Error('Sem dados suficientes para calcular esse período.');
-
-          const variation = (res.factor - 1) * 100;
-          const newRent = rent * res.factor;
-
-          outDate.textContent = formatDateBR(refDate);
-          outVar.textContent = `${nfPct.format(variation)}%`;
-          outFactor.textContent = fmtFactor(res.factor);
-          outRent.textContent = formatBRL(newRent);
-          outList.textContent = res.lines.join('\n') || '—';
-
-          diagEl.textContent =
-            `URL consultada:\n${url}\n\n` +
-            `Índice: ${cfg.name} (SGS ${code})\n` +
-            `Periodicidade: Mensal\n` +
-            `Período considerado: ${ddmmyyyy(startMonth)} até ${ddmmyyyy(endMonth)}\n` +
-            `Travar deflação: ${locked ? 'SIM' : 'NÃO'}\n` +
-            `Fator aplicado: ${res.factor}\n`;
-
-          setStatus('Cálculo concluído com sucesso.', 'ok');
-          renderYearTable([]);
-          return;
-        }
-
-        // ========= ANUAL (ANO A ANO) =========
-        // Gerar aniversários do contrato: start + 1 ano ... até (ano atual + 1), limitado a 10 anos
-        const yearsToShow = Math.min(10, (today.getFullYear() - start.getFullYear() + 2));
-        const rowsOut = [];
-
-        let lastOkRow = null;
-        let lastOkLines = null;
-
-        for(let i=1; i<=yearsToShow; i++){
-          const refDate = addYears(start, i);
-          const year = refDate.getFullYear();
-
-          const periodStart = firstOfMonth(addYears(start, i-1));
-          const periodEnd = firstOfMonth(addMonths(refDate, -1)); // mês anterior ao reajuste
-
-          // texto do período
-          const periodText = `${ddmmyyyy(periodStart)} até ${ddmmyyyy(periodEnd)}`;
-
-          // Se período final está além do último mês disponível: sem dados
-          if(periodEnd > lastMonthAvailable){
-            rowsOut.push({
-              year,
-              refDate: formatDateBR(refDate),
-              periodText,
-              variationPct: null,
-              newRent: null,
-              status: 'SEM'
-            });
-            continue;
-          }
-
-          const res = factorForMonthRange(periodStart, periodEnd);
-          if(!res.ok){
-            rowsOut.push({
-              year,
-              refDate: formatDateBR(refDate),
-              periodText,
-              variationPct: null,
-              newRent: null,
-              status: 'SEM'
-            });
-            continue;
-          }
-
-          const variation = (res.factor - 1) * 100;
-
-          // Reajuste encadeado (ano a ano): novo aluguel vira base do próximo
-          const baseRent = lastOkRow ? lastOkRow.newRent : rent;
-          const newRent = baseRent * res.factor;
-
-          const okRow = {
-            year,
-            refDate: formatDateBR(refDate),
-            periodText,
-            variationPct: variation,
-            newRent,
-            status: 'OK'
-          };
-
-          rowsOut.push(okRow);
-          lastOkRow = okRow;
-          lastOkLines = res.lines;
-        }
-
-        renderYearTable(rowsOut);
-
-        if(!lastOkRow){
-          setStatus('Sem dados ainda: o índice necessário para calcular o primeiro reajuste ainda não foi divulgado pelo BCB.', 'err');
-          outDate.textContent = '—';
-          outVar.textContent = '—';
-          outFactor.textContent = '—';
-          outRent.textContent = '—';
-          outList.textContent = '—';
-
-          diagEl.textContent =
-            `URL consultada:\n${url}\n\n` +
-            `Índice: ${cfg.name} (SGS ${code})\n` +
-            `Periodicidade: Anual (ano a ano)\n` +
-            `Início do contrato: ${formatDateBR(start)}\n` +
-            `Último mês disponível no retorno: ${ddmmyyyy(lastMonthAvailable)}\n` +
-            `Status: Sem dados ainda\n`;
-          return;
-        }
-
-        // Último reajuste calculado (o mais recente com dados)
-        outDate.textContent = lastOkRow.refDate;
-        outVar.textContent = `${nfPct.format(lastOkRow.variationPct)}%`;
-        // fator exibido: recalcular fator do último período (sem “encadear”)
-        // (melhor pro usuário entender “fator daquele ano”)
-        const lastRowIndex = rowsOut.findIndex(r => r.year === lastOkRow.year && r.status === 'OK');
-        // Para obter o fator daquele ano, usamos variação -> fator = 1 + var/100 (aprox), mas melhor não aproximar.
-        // Aqui mantemos coerência: como o outFactor é “fator aplicado” do último cálculo, vamos reavaliar pelo período
-        // (sem depender de aproximação).
-        const iLast = lastRowIndex + 1; // porque i começa em 1
-        const refLast = addYears(start, iLast);
-        const pStartLast = firstOfMonth(addYears(start, iLast-1));
-        const pEndLast = firstOfMonth(addMonths(refLast, -1));
-        const lastFactorRes = factorForMonthRange(pStartLast, pEndLast);
-        const factorToShow = lastFactorRes.ok ? lastFactorRes.factor : null;
-
-        outFactor.textContent = factorToShow ? fmtFactor(factorToShow) : '—';
-        outRent.textContent = formatBRL(lastOkRow.newRent);
-        outList.textContent = (lastOkLines && lastOkLines.length) ? lastOkLines.join('\n') : '—';
-
-        const futureCount = rowsOut.filter(r => r.status !== 'OK').length;
-        setStatus(
-          futureCount > 0
-            ? 'Cálculo concluído. Reajustes futuros aparecem como <b>Sem dados ainda</b>.'
-            : 'Cálculo concluído com sucesso.',
-          'ok'
-        );
-
-        diagEl.textContent =
-          `URL consultada:\n${url}\n\n` +
-          `Índice: ${cfg.name} (SGS ${code})\n` +
-          `Periodicidade: Anual (ano a ano)\n` +
-          `Início do contrato: ${formatDateBR(start)}\n` +
-          `Último mês disponível no retorno: ${ddmmyyyy(lastMonthAvailable)}\n` +
-          `Travar deflação: ${locked ? 'SIM' : 'NÃO'}\n`;
-
-      }catch(err){
-        console.error(err);
-        setStatus(`Erro: ${err.message}`, 'err');
-        clearOutputs();
-      }finally{
-        btnEl.disabled = false;
-      }
-    });
-  </script>
+  <script src="../../assets/reajuste.js"></script>
 </body>
 </html>
