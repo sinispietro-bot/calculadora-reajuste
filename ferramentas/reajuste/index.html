@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Calculadora de Reajuste - Ferramentas</title>
 
-  <!-- CSS do site -->
+  <!-- CSS do site (menu / padrão) -->
   <link rel="stylesheet" href="../../assets/styles.css" />
 
   <!-- CSS da calculadora (o que funcionava) -->
@@ -28,6 +28,7 @@
 
     *{box-sizing:border-box}
 
+    /* o site já tem fundo; mas garantimos bom visual dentro da página */
     .calcPage{
       max-width:1100px;
       margin:0 auto;
@@ -176,7 +177,6 @@
       font-size:13px;
     }
     .status.ok{color:#d1fae5; border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.08);}
-    .status.warn{color:#fff7ed; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.08);}
     .status.err{color:#ffe4e6; border-color: rgba(255,107,107,.38); background: rgba(255,107,107,.08);}
 
     .resHead{
@@ -223,6 +223,7 @@
       line-height:1.35;
     }
 
+    /* dropdown no tema escuro */
     select option{
       background-color:#0b1225;
       color:#e6edf6;
@@ -237,44 +238,11 @@
       margin-top:16px;
       color:#cbd5e1;
     }
-
-    /* tabela ano a ano */
-    .tableWrap{
-      overflow:auto;
-      border:1px solid var(--line);
-      border-radius:16px;
-      background: rgba(15,23,42,.35);
-    }
-    table{
-      width:100%;
-      border-collapse:collapse;
-      min-width:620px;
-    }
-    th, td{
-      padding:10px 12px;
-      border-bottom:1px solid rgba(255,255,255,.07);
-      text-align:left;
-      font-size:13px;
-      vertical-align:top;
-    }
-    th{ color:#cbd5e1; font-weight:700; }
-    td{ color:#e6edf6; }
-    .muted{ color: var(--muted); }
-    .pillSmall{
-      display:inline-block;
-      font-size:11px;
-      padding:5px 8px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background: rgba(15,23,42,.55);
-      color:#cbd5e1;
-      white-space:nowrap;
-    }
   </style>
 </head>
 
 <body>
-  <!-- MENU DO SITE -->
+  <!-- MENU DO SITE (padrão do seu projeto) -->
   <header class="nav">
     <div class="navInner">
       <div class="brand"><span>Shopping Center</span><span class="badge">Ferramentas</span></div>
@@ -297,7 +265,7 @@
             <h1 class="title">Calculadora de Reajuste de Aluguel</h1>
             <p class="sub">
               Você informa <b>aluguel</b>, <b>data de início</b>, <b>índice</b> e <b>periodicidade</b>.
-              Para <b>anual</b>, o sistema traz os reajustes <b>ano a ano</b> (quando houver dados).
+              O sistema busca as variações oficiais no <b>Banco Central (SGS/BCB)</b> e calcula o reajuste acumulado.
             </p>
           </div>
           <div class="pill">Brasil · índices oficiais</div>
@@ -338,11 +306,11 @@
               <label for="freq">Periodicidade do reajuste</label>
               <div class="field">
                 <select id="freq">
-                  <option value="monthly">Mensal (1 reajuste)</option>
-                  <option value="annual" selected>Anual (ano a ano)</option>
+                  <option value="monthly">Mensal</option>
+                  <option value="annual" selected>Anual</option>
                 </select>
               </div>
-              <div class="hint">Anual: mostra cada aniversário até hoje (ou sinaliza quando for futuro).</div>
+              <div class="hint">Considera do mês inicial até o mês anterior ao reajuste.</div>
             </div>
           </div>
 
@@ -358,7 +326,7 @@
           <div id="status" class="status">Preencha os campos e clique em <b>Calcular</b>.</div>
 
           <details style="margin-top:12px;">
-            <summary>Diagnóstico (URL consultada e período)</summary>
+            <summary>Diagnóstico (para conferir se está lendo o BCB)</summary>
             <pre id="diag">—</pre>
           </details>
 
@@ -370,17 +338,17 @@
       <aside class="panel">
         <div class="resHead">
           <h2 class="resTitle">Resultado</h2>
-          <div class="resSub">Último reajuste calculado + visão ano a ano (anual).</div>
+          <div class="resSub">Variação acumulada, fator e novo aluguel.</div>
         </div>
 
         <div class="cards">
           <div class="kpi">
-            <p class="k">Reajuste (referência)</p>
+            <p class="k">Data do reajuste</p>
             <p class="v" id="outDate">—</p>
           </div>
 
           <div class="kpi">
-            <p class="k">Variação no período</p>
+            <p class="k">Variação acumulada no período</p>
             <p class="v" id="outVar">—</p>
           </div>
 
@@ -394,33 +362,8 @@
             <p class="v" id="outRent">—</p>
           </div>
 
-          <!-- NOVO: Ano a ano -->
-          <details open>
-            <summary>Reajustes ano a ano (anual)</summary>
-            <div class="hint" style="margin:8px 0 10px;">
-              Mostra cada aniversário do contrato. Se o reajuste for futuro e não houver índice, aparece como “Sem dados ainda”.
-            </div>
-            <div class="tableWrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Ano</th>
-                    <th>Data do reajuste</th>
-                    <th>Período considerado</th>
-                    <th>Variação</th>
-                    <th>Novo aluguel</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="yearRows">
-                  <tr><td colspan="6" class="muted">—</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </details>
-
           <details>
-            <summary>Ver meses e variações utilizadas (último cálculo)</summary>
+            <summary>Ver meses e variações utilizadas</summary>
             <pre id="outList">—</pre>
           </details>
 
@@ -431,6 +374,7 @@
     </div>
   </main>
 
+  <!-- SCRIPT DA CALCULADORA (externo) -->
   <script src="../../assets/reajuste.js"></script>
 </body>
 </html>
